@@ -27,6 +27,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = NSHostingView(rootView: ContentView())
 
         window.makeKeyAndOrderFront(nil)
+        
+       
+        
+      
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
