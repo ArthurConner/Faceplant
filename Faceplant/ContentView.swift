@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+ #if os(OSX)
 
 struct FileView : View {
     
@@ -16,13 +17,32 @@ struct FileView : View {
     var body: some View {
         
         Image(nsImage: info.image!)
-            .frame(width: ACFileStatus.thumbSize.width * 2, height: ACFileStatus.thumbSize.height * 2).background(Color.orange)
+            .frame(width: ACFileStatus.thumbSize.width , height: ACFileStatus.thumbSize.height ).padding()
+            .background(Color.white.cornerRadius(8))
         
         
         
     }
     
 }
+#else
+
+struct FileView : View {
+    
+    @ObjectBinding var info:ACFileStatus
+    
+    var body: some View {
+        
+        Image(uiImage: info.image!)
+            .frame(width: ACFileStatus.thumbSize.width , height: ACFileStatus.thumbSize.height ).padding(3)
+            .background(Color.gray.cornerRadius(8))
+        
+        
+        
+    }
+    
+}
+#endif
 
 struct GroupView : View {
     
@@ -37,13 +57,9 @@ struct GroupView : View {
             HStack{
                 
                 ForEach(group.members.filter({$0.image != nil})){ x in
-                    Image(nsImage: x.image!).frame(width: ACFileStatus.thumbSize.width , height: ACFileStatus.thumbSize.height ).padding()
-                        .background(Color.white.cornerRadius(8))
+                    FileView(info: x)
                 }
-            }.padding()
-            
-            
-            
+            }
         }
         
         
@@ -65,7 +81,7 @@ struct GroupView : View {
 
 struct ContentView : View {
     
-    @ObjectBinding var myGroups =  FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true, post:true)
+    @ObjectBinding var myGroups:FileLoader
     
     var body: some View {
         
@@ -79,7 +95,7 @@ struct ContentView : View {
                 ForEach(myGroups.groups) { landmark in
                     GroupView(group: landmark)
                     
-                }.padding()
+                }
                 //}.background(Color.purple)
             }.padding()
             //  .background(Color.pink)
@@ -93,7 +109,7 @@ struct ContentView : View {
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(myGroups:FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true, post:true))
     }
 }
 #endif

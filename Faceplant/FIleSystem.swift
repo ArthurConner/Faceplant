@@ -103,11 +103,19 @@ class ACFileStatus   {
         }
     }
     
+    #if os(OSX)
     var image:NSImage?{
         didSet {
             updateMe()
         }
     }
+    #else
+    var image:UIImage?{
+        didSet {
+            updateMe()
+        }
+    }
+    #endif
     
     var currentRect = CGRect(x: 0, y: 0, width: 80, height: 80){
         didSet {
@@ -128,8 +136,8 @@ class ACFileStatus   {
         
     }
     
+    #if os(OSX)
     static let thumbSize = NSSize(width: 128, height: 128)
-    
     
     func makeThumb(){
         guard self.image == nil else {return}
@@ -150,9 +158,36 @@ class ACFileStatus   {
         }
     }
     
+    #else
+    static let thumbSize = CGSize(width: 96, height: 96)
+    
+    func makeThumb(){
+        guard self.image == nil else {return}
+        //let url = URL(fileURLWithPath: info.path)
+       // DispatchQueue.main.async {
+            //print("making thumbnail: \(self.info.path)")
+            
+            if let im = UIImage(contentsOfFile: self.info.path){
+                
+                let renderer = UIGraphicsImageRenderer(size: ACFileStatus.thumbSize)
+                self.image =   renderer.image { (context) in
+                    im.draw(in: CGRect(origin: .zero, size: ACFileStatus.thumbSize))
+                }
+                
+               
+                print("stopped thumbnail: \(self.info.path)")
+            } else {
+                print("No image for \(self.info.path)")
+            }
+      //  }
+    }
+    
+    #endif
+    
+    
     lazy var features:VNFeaturePrintObservation? = {
         let url = URL(fileURLWithPath: info.path)
-        print("starting: \(info.path)")
+        print("feature starting: \(info.key)")
         
         
         
@@ -161,7 +196,7 @@ class ACFileStatus   {
         do {
             
             try requestHandler.perform([request])
-            print("finishing: \(info.path)")
+            print("feature finishing: \(info.key)")
             return request.results?.first as? VNFeaturePrintObservation
         } catch {
             print("Vision error: \(error)")
@@ -217,6 +252,8 @@ class FileLoader  : BindableObject {
         }
     }
     
+  
+    
     private var files:[ACFileStatus] = []
     
     var source:String
@@ -232,7 +269,8 @@ class FileLoader  : BindableObject {
         var files: [ACFileStatus] = []
         do {
             for  x in try f.contentsOfDirectory(atPath: path){
-                if keep.contains((x as NSString).pathExtension),
+                let filekid = (x as NSString).pathExtension.uppercased()
+                if keep.contains(filekid),
                     let info = ACFileStatus(path: (path as NSString).appendingPathComponent(x), isImage: isImage){
                     files.append(info)
                 }
