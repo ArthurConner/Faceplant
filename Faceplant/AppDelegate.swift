@@ -24,7 +24,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
         window.setFrameAutosaveName("Main Window")
 
-        window.contentView = NSHostingView(rootView: ContentView())
+        let loader = FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true)
+        loader.process()
+        
+        window.contentView = NSHostingView(rootView: ContentView(myGroups: loader))
 
         window.makeKeyAndOrderFront(nil)
         

@@ -8,7 +8,7 @@
 
 import SwiftUI
 
- #if os(OSX)
+#if os(OSX)
 
 struct FileView : View {
     
@@ -16,39 +16,17 @@ struct FileView : View {
     
     var body: some View {
         let im = info.image!
-        
-        return Image(nsImage: info.image!)
-            .frame(width: inf , height: ACFileStatus.thumbSize.height ).padding()
-            .background(Color.white.cornerRadius(8))
-        
-        
-        
-    }
-    
-}
-#else
-
-struct FileView : View {
-    
-    @ObjectBinding var info:ACFileStatus
-    
-    var body: some View {
-         let im = info.image!
         let rad:CGFloat = 8
         
-       
         if info.isKeeper{
-            return Image(uiImage: im)
+            return Image(nsImage: im)
                 .frame(width: im.size.width , height: im.size.height ).padding()
-            .background(Color.blue.cornerRadius(rad))
+                .background(Color.blue.cornerRadius(rad))
         } else {
-            return Image(uiImage: im)
+            return Image(nsImage: im)
                 .frame(width: im.size.width , height: im.size.height ).padding(6)
-            .background(Color.gray.cornerRadius(rad))
+                .background(Color.gray.cornerRadius(rad))
         }
-        
-        
-        
     }
     
 }
@@ -57,36 +35,28 @@ struct DetailView : View {
     
     @ObjectBinding var loader:FileLoader
     @ObjectBinding var info:ACFileStatus
-   
+    
     func imageDetail()->AnyView{
-        //let index = max(loader.selectIndex,0)
-       // let info = loader.files[index]
-        
-        let im = info.makeScale(maxDim: 300)!
-        
+        let im = info.makeScale(maxDim: 600)!
         let rad:CGFloat = 8
-        
         
         if info.isKeeper{
             return AnyView(
-                Image(uiImage: im)
-                .frame(width: im.size.width , height: im.size.height ).padding(3)
-                .background(Color.blue.cornerRadius(rad))
+                Image(nsImage: im)
+                    .frame(width: im.size.width , height: im.size.height ).padding(3)
+                    .background(Color.blue.cornerRadius(rad))
             )
             
         } else {
-            return AnyView(Image(uiImage: im)
+            return AnyView(Image(nsImage: im)
                 .frame(width: im.size.width , height: im.size.height ).padding(3)
                 .background(Color.gray.cornerRadius(rad))
-    )
-    
+            )
+            
         }
     }
     
     var body: some View {
-        
-       
-      
         HStack{
             imageDetail()
             VStack{
@@ -96,9 +66,73 @@ struct DetailView : View {
                 //Toggle(loader.files[max(loader.selectIndex,0)]).keeper,
             }
         }
+    }
+    
+}
+
+#else
+
+struct FileView : View {
+    
+    @ObjectBinding var info:ACFileStatus
+    
+    var body: some View {
+        let im = info.image!
+        let rad:CGFloat = 8
+        
+        if info.isKeeper{
+            return Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding()
+                .background(Color.blue.cornerRadius(rad))
+        } else {
+            return Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding(6)
+                .background(Color.gray.cornerRadius(rad))
+        }
+    }
+    
+}
+
+struct DetailView : View {
+    
+    @ObjectBinding var loader:FileLoader
+    @ObjectBinding var info:ACFileStatus
+    
+    func imageDetail()->AnyView{
+        //let index = max(loader.selectIndex,0)
+        // let info = loader.files[index]
+        
+        let im = info.makeScale(maxDim: 300)!
+        
+        let rad:CGFloat = 8
         
         
-        
+        if info.isKeeper{
+            return AnyView(
+                Image(uiImage: im)
+                    .frame(width: im.size.width , height: im.size.height ).padding(3)
+                    .background(Color.blue.cornerRadius(rad))
+            )
+            
+        } else {
+            return AnyView(Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding(3)
+                .background(Color.gray.cornerRadius(rad))
+            )
+            
+        }
+    }
+    
+    var body: some View {
+        HStack{
+            imageDetail()
+            VStack{
+                Toggle(isOn: $info.isKeeper){
+                    Text("Keep")
+                }
+                //Toggle(loader.files[max(loader.selectIndex,0)]).keeper,
+            }
+        }
     }
     
 }
@@ -116,25 +150,11 @@ struct GroupView : View {
         return ScrollView(.horizontal, showsIndicators: true){
             
             HStack{
-                
                 ForEach(group.members.filter({$0.image != nil})){ x in
                     FileView(info: x)
                 }
             }
         }
-        
-        
-        /*
-         
-         return ScrollView(.horizontal, showsIndicators: true){
-         HStack{
-         List(group.members.filter({$0.image != nil})) { landmark in
-         FileView(info: landmark)
-         
-         }
-         }.frame(height: ACFileStatus.thumbSize.height)
-         }.background(Color.yellow)
-         */
         
     }
     

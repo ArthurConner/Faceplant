@@ -16,9 +16,6 @@ import Vision
 struct FileInfo {
     let path: String
     let date: DateComponents
-    
-    
-    
     let id: UUID = UUID()
     
     var key:String{
@@ -61,8 +58,7 @@ struct FileInfo {
     
     static func make(path:String,isImage:Bool)->(String,FileInfo)?{
         
-        guard
-            let comp = FileInfo.dateURL(URL(fileURLWithPath: path),isImage: isImage) else { return nil}
+        guard let comp = FileInfo.dateURL(URL(fileURLWithPath: path),isImage: isImage) else { return nil}
         
         let r = FileInfo(path: path, date: comp)
         let fname = (path as NSString).lastPathComponent
@@ -72,7 +68,7 @@ struct FileInfo {
     }
 }
 
-class ACFileStatus   {
+class ACFileStatus {
     let info: FileInfo
     let key:String
     let didChange = PassthroughSubject<ACFileStatus, Never>()
@@ -87,10 +83,10 @@ class ACFileStatus   {
     
     func updateMe(){
         DispatchQueue.main.async {
-            
             self.didChange.send(self)
         }
     }
+    
     var isKeeper = false{
         didSet {
             updateMe()
@@ -103,24 +99,9 @@ class ACFileStatus   {
         }
     }
     
-    #if os(OSX)
-    var image:NSImage?{
-        didSet {
-            updateMe()
-        }
-    }
-    #else
-    var image:UIImage?{
-        didSet {
-            updateMe()
-        }
-    }
-    #endif
-    
     var currentRect = CGRect(x: 0, y: 0, width: 80, height: 80){
         didSet {
             updateMe()
-            
         }
     }
     
@@ -136,36 +117,38 @@ class ACFileStatus   {
         
     }
     
+    lazy var image = {
+        return makeScale(maxDim: ACFileStatus.thumbSize.height)
+    }()
+    
+    
     #if os(OSX)
     static let thumbSize = NSSize(width: 128, height: 128)
     
-    func makeThumb(){
-        guard self.image == nil else {return}
+    func makeScale(maxDim:CGFloat)->NSImage?{
+        
         let url = URL(fileURLWithPath: info.path)
-        DispatchQueue.main.async {
-            print("making thumbnail: \(self.info.path)")
-            if let im = NSImage(contentsOf: url){
-                let small = NSImage(size: ACFileStatus.thumbSize)
-                let fromRect = NSRect(x: 0, y: 0, width:im.size.width, height: im.size.height)
-                small.lockFocus()
-                im.draw(in: NSRect(x: 0, y: 0, width: ACFileStatus.thumbSize.width, height: ACFileStatus.thumbSize.height), from: fromRect, operation: .copy, fraction: 1)
-                small.unlockFocus()
-                self.image = small
-                print("stopped thumbnail: \(self.info.path)")
-            } else {
-                print("No image for \(self.info.path)")
-            }
+        
+        print("making thumbnail: \(self.info.path)")
+        if let im = NSImage(contentsOf: url){
+            let longest = max(im.size.height,im.size.width)
+            let scale = maxDim/longest
+            let size = CGSize(width:im.size.width*scale,height: im.size.height*scale)
+            let small = NSImage(size: size)
+            let fromRect = NSRect(x: 0, y: 0, width:im.size.width, height: im.size.height)
+            small.lockFocus()
+            im.draw(in: NSRect(x: 0, y: 0, width: size.width, height: size.height), from: fromRect, operation: .copy, fraction: 1)
+            small.unlockFocus()
+            return  small
+            
         }
+        return nil
     }
+    
     
     #else
     static let thumbSize = CGSize(width: 96, height: 96)
     
-    func makeThumb(){
-        guard self.image == nil else {return}
-        self.image = makeScale(maxDim: ACFileStatus.thumbSize.height)
-        
-    }
     
     func makeScale(maxDim:CGFloat)->UIImage?{
         
@@ -179,7 +162,7 @@ class ACFileStatus   {
             }
             
             
-           
+            
         }
         return nil
         //  }
@@ -210,6 +193,7 @@ class ACFileStatus   {
     
     
 }
+
 extension ACFileStatus : Identifiable{
     public var id:UUID {
         return info.id
@@ -222,7 +206,6 @@ extension ACFileStatus : BindableObject {
 
 class ACFileGroup {
     let members:[ACFileStatus]
-    
     init(_ m: [ACFileStatus]) {
         members = m
     }
@@ -236,22 +219,21 @@ extension ACFileGroup : Identifiable{
 
 class FileLoader  : BindableObject {
     
+    let files:[ACFileStatus]
+    var source:String
+    let didChange = PassthroughSubject<FileLoader, Never>()
+    
     var groups: [ACFileGroup] = [] {
         didSet {
             DispatchQueue.main.async {
                 self.didChange.send(self)
             }
-            
         }
     }
     
     var theshold:Float = 10.0  {
         didSet {
-            DispatchQueue.main.async {
-                self.didChange.send(self)
-                self.process()
-            }
-            
+            self.process()
         }
     }
     
@@ -259,19 +241,10 @@ class FileLoader  : BindableObject {
         didSet {
             DispatchQueue.main.async {
                 self.didChange.send(self)
-                self.process()
             }
             
         }
     }
-    
-  
-    
-    let files:[ACFileStatus]
-    
-    var source:String
-    
-    let didChange = PassthroughSubject<FileLoader, Never>()
     
     static func contentsOf(_ path:String, kinds:[String], isImage:Bool = true)->[ACFileStatus]{
         
@@ -307,20 +280,17 @@ class FileLoader  : BindableObject {
         var isDir:ObjCBool = true
         for dir in dirs{
             do {
-                
-                for  x in try f.contentsOfDirectory(atPath: dir){
+                for x in try f.contentsOfDirectory(atPath: dir){
                     let full =  (dir as NSString).appendingPathComponent(x)
-                    
                     if (f.fileExists(atPath: full, isDirectory: &isDir) ){
                         if isDir.boolValue {
-                        let adds = FileLoader.recursive(dirs: [full], kinds: kinds, isImage: isImage)
-                        for v in adds {
-                            files.append(v)
-                        }
+                            let adds = FileLoader.recursive(dirs: [full], kinds: kinds, isImage: isImage)
+                            for v in adds {
+                                files.append(v)
+                            }
                         }
                         
                     }
-                    
                 }
             } catch {
                 print(error)
@@ -345,10 +315,6 @@ class FileLoader  : BindableObject {
             
             let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
             
-            for x in f {
-                x.makeThumb()
-            }
-            
             var ret:[ACFileGroup] = []
             let unknown = f.filter{ $0.features == nil }
             if !unknown.isEmpty {
@@ -365,8 +331,6 @@ class FileLoader  : BindableObject {
                     do {
                         var distance = Float(0)
                         try goodExample.features!.computeDistance(&distance, to: check.features!)
-                        
-                        
                         print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
                         if distance < self.theshold {
                             current.append(check)
@@ -376,10 +340,8 @@ class FileLoader  : BindableObject {
                         }
                         
                     } catch {
-                        
                         ret.append(ACFileGroup(current))
                         current = [check]
-                        
                     }
                     
                 } else {
@@ -393,42 +355,27 @@ class FileLoader  : BindableObject {
             DispatchQueue.main.async {
                 self.groups = ret
             }
-            
-            
         }
-        
     }
     
     private init(path:String, _ f:[ ACFileStatus]){
         source = path
         files = f.sorted{$0.info.key < $1.info.key}
-        
-        //c
     }
     
-   convenience init(_ path:String, kinds:[String], isImage:Bool = true){
-        //source = path
-        //files = FileLoader.contentsOf(path, kinds:kinds, isImage:isImage)
+    convenience init(_ path:String, kinds:[String], isImage:Bool = true){
         self.init(path:path,FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
     }
     
-     convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
-       
-        
+    convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
         self.init(path:path,FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
-       
     }
     
     func exclude(other:FileLoader)->FileLoader{
         let exclude = Set<String>(other.files.map({return $0.info.key}))
         let nextFiles = files.filter({!exclude.contains($0.info.key)})
         return FileLoader(path: self.source, nextFiles)
- 
+        
     }
-    
-  
-    
-    
-    
-    
+
 }
