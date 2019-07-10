@@ -184,47 +184,45 @@ class FileLoader  : BindableObject, Codable {
         }
     }
     
-    convenience init(_ path:String, kinds:[String], isImage:Bool = true){
+    private convenience init(path:String, paths:Set<String>,isImage:Bool){
         let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent("Status.json"))
         let decoder =  JSONDecoder()
-        let paths = Set<String>(FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
+       
         var statusArray:[ACFileStatus] = []
         var other:FileLoader? = nil
+        let unknowns:[ACFileStatus]
         if let data = try? Data(contentsOf: savePath, options: .mappedIfSafe),
             let main  = try? decoder.decode(FileLoader.self,from: data) {
             //
             statusArray =  main.files.filter{paths.contains($0.info.path)}
             let excludePaths = Set<String>(statusArray.map({return $0.info.path}))
-            statusArray.append(contentsOf: paths.filter({return !excludePaths.contains($0)}).compactMap({return ACFileStatus(path: $0, isImage: isImage)}))
+            unknowns = paths.filter({return !excludePaths.contains($0)}).compactMap({return ACFileStatus(path: $0, isImage: isImage)})
             other = main
         } else {
-             statusArray.append(contentsOf: paths.compactMap({return ACFileStatus(path: $0, isImage: isImage)}))
+            unknowns = paths.compactMap({return ACFileStatus(path: $0, isImage: isImage)})
+        }
+        
+        statusArray.append(contentsOf: unknowns)
+        for x in unknowns {
+            x.analyse()
         }
         
         self.init(path:path,statusArray, other)
         
     }
     
+    convenience init(_ path:String, kinds:[String], isImage:Bool = true){
+
+        let paths = Set<String>(FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
+        
+        self.init(path:path,paths:paths,isImage:isImage)
+        
+        
+    }
+    
     convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
-        
-        let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent("Status.json"))
-        let decoder =  JSONDecoder()
         let paths = Set<String>(FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
-        var statusArray:[ACFileStatus] = []
-        var other:FileLoader? = nil
-        
-        if let data = try? Data(contentsOf: savePath, options: .mappedIfSafe),
-            let main  = try? decoder.decode(FileLoader.self,from: data) {
-            other = main
-            statusArray =  main.files.filter{paths.contains($0.info.path)}
-            let excludePaths = Set<String>(statusArray.map({return $0.info.path}))
-            statusArray.append(contentsOf: paths.filter({return !excludePaths.contains($0)}).compactMap({return ACFileStatus(path: $0, isImage: isImage)}))
-            
-        } else {
-            statusArray.append(contentsOf: paths.compactMap({return ACFileStatus(path: $0, isImage: isImage)}))
-        }
-        
-        self.init(path:path,statusArray,other)
+        self.init(path:path,paths:paths,isImage:isImage)
     
     }
     

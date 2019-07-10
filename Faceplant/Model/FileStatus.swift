@@ -76,11 +76,18 @@ class ACFileStatus : Codable{
             updateMe()
         }
     }
+    var categories: [String: Float] = [:]
+    var terms: [String: Float] = [:]
+    var faces:[CGRect] = []
     
     enum CodingKeys: String, CodingKey {
         case info = "file"
         case key = "StatusKey"
         case isKeeper = "Keeper"
+       case categories
+        case terms
+       // case searchterms = "Terms"
+        //case faces
     }
     
     let didChange = PassthroughSubject<ACFileStatus, Never>()
@@ -191,6 +198,39 @@ class ACFileStatus : Codable{
 extension ACFileStatus : Identifiable{
     public var id:UUID {
         return info.id
+    }
+    
+    func analyse(){
+        
+        
+        // Classify the images
+        print("going to \(self.info.path)")
+        let url = URL(fileURLWithPath: info.path)
+       // let url = URL(fileURLWithPath: self.info.path)
+      
+       
+       
+         let handler = VNImageRequestHandler(url: url, options: [:])
+         let request = VNClassifyImageRequest()
+        
+         try? handler.perform([request])
+        
+         // Process classification results
+         guard let observations = request.results as? [VNClassificationObservation] else {
+         categories = [:]
+         terms = [:]
+         return
+         }
+        
+         categories = observations
+         .filter { $0.hasMinimumRecall(0.01, forPrecision: 0.9) }
+         .reduce(into: [String: VNConfidence]()) { dict, observation in dict[observation.identifier] = observation.confidence }
+         
+         terms = observations
+         .filter { $0.hasMinimumPrecision(0.01, forRecall: 0.7) }
+         .reduce(into: [String: VNConfidence]()) { (dict, observation) in dict[observation.identifier] = observation.confidence }
+         
+         
     }
 }
 
