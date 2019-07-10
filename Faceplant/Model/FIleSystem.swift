@@ -232,9 +232,8 @@ class FileLoader  : BindableObject, Codable {
         let jsonEncoder = JSONEncoder()
         
         jsonEncoder.outputFormatting = .prettyPrinted
-        if let data =  try? jsonEncoder.encode(self),
-            let s = String(data: data, encoding: .utf8){
-            print(s)
+        if let data =  try? jsonEncoder.encode(self){
+           // print(s)
             try? data.write(to:URL(fileURLWithPath: (source as NSString).appendingPathComponent("Status.json")))
         }
     }

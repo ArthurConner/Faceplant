@@ -173,16 +173,10 @@ class ACFileStatus : Codable{
     
     lazy var features:VNFeaturePrintObservation? = {
         let url = URL(fileURLWithPath: info.path)
-        print("feature starting: \(info.key)")
-        
-        
-        
         let requestHandler = VNImageRequestHandler(url: url, options: [:])
         let request = VNGenerateImageFeaturePrintRequest()
         do {
-            
             try requestHandler.perform([request])
-            print("feature finishing: \(info.key)")
             return request.results?.first as? VNFeaturePrintObservation
         } catch {
             print("Vision error: \(error)")

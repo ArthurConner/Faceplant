@@ -148,8 +148,9 @@ print("Hello, World!")
 
 
 let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG"], isImage: true)
+main.save()
 checkTime("Loaded files")
-main.findFar(count: 8, tot: 9000)
+main.findFar(count: 16, tot: 16000)
 
 
 
