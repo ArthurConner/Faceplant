@@ -25,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameAutosaveName("Main Window")
 
         let loader = FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true)
+        loader.save()
         loader.process()
         
         window.contentView = NSHostingView(rootView: ContentView(myGroups: loader))
