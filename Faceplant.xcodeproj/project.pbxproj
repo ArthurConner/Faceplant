@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A15DC4F22D6533200CAA240 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A15DC4E22D6533200CAA240 /* main.swift */; };
+		4A15DC5322D6535700CAA240 /* FIleSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A85C40322D3C5B8006E6D6C /* FIleSystem.swift */; };
 		4A20C39022D53B8500C9FC6B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A20C38F22D53B8500C9FC6B /* AppDelegate.swift */; };
 		4A20C39222D53B8500C9FC6B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A20C39122D53B8500C9FC6B /* SceneDelegate.swift */; };
 		4A20C39622D53B8600C9FC6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A20C39522D53B8600C9FC6B /* Assets.xcassets */; };
@@ -49,7 +51,21 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		4A15DC4A22D6533200CAA240 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		4A15DC4C22D6533200CAA240 /* FaceProcessor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FaceProcessor; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A15DC4E22D6533200CAA240 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4A20C38D22D53B8500C9FC6B /* planter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A20C38F22D53B8500C9FC6B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4A20C39122D53B8500C9FC6B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -79,6 +95,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4A15DC4922D6533200CAA240 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A20C38A22D53B8500C9FC6B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,6 +140,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A15DC4D22D6533200CAA240 /* FaceProcessor */ = {
+			isa = PBXGroup;
+			children = (
+				4A15DC4E22D6533200CAA240 /* main.swift */,
+			);
+			path = FaceProcessor;
+			sourceTree = "<group>";
+		};
 		4A20C38E22D53B8500C9FC6B /* planter */ = {
 			isa = PBXGroup;
 			children = (
@@ -155,6 +186,7 @@
 				4A85C3F422D3C4E4006E6D6C /* FaceplantUITests */,
 				4A20C38E22D53B8500C9FC6B /* planter */,
 				4A20C3A522D53B8600C9FC6B /* planterTests */,
+				4A15DC4D22D6533200CAA240 /* FaceProcessor */,
 				4A85C3D222D3C4E0006E6D6C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -167,6 +199,7 @@
 				4A85C3F122D3C4E4006E6D6C /* FaceplantUITests.xctest */,
 				4A20C38D22D53B8500C9FC6B /* planter.app */,
 				4A20C3A222D53B8600C9FC6B /* planterTests.xctest */,
+				4A15DC4C22D6533200CAA240 /* FaceProcessor */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -216,6 +249,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4A15DC4B22D6533200CAA240 /* FaceProcessor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A15DC5222D6533200CAA240 /* Build configuration list for PBXNativeTarget "FaceProcessor" */;
+			buildPhases = (
+				4A15DC4822D6533200CAA240 /* Sources */,
+				4A15DC4922D6533200CAA240 /* Frameworks */,
+				4A15DC4A22D6533200CAA240 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FaceProcessor;
+			productName = FaceProcessor;
+			productReference = 4A15DC4C22D6533200CAA240 /* FaceProcessor */;
+			productType = "com.apple.product-type.tool";
+		};
 		4A20C38C22D53B8500C9FC6B /* planter */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A20C3AD22D53B8600C9FC6B /* Build configuration list for PBXNativeTarget "planter" */;
@@ -314,6 +364,9 @@
 				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "Arthur Conner";
 				TargetAttributes = {
+					4A15DC4B22D6533200CAA240 = {
+						CreatedOnToolsVersion = 11.0;
+					};
 					4A20C38C22D53B8500C9FC6B = {
 						CreatedOnToolsVersion = 11.0;
 					};
@@ -352,6 +405,7 @@
 				4A85C3F022D3C4E4006E6D6C /* FaceplantUITests */,
 				4A20C38C22D53B8500C9FC6B /* planter */,
 				4A20C3A122D53B8600C9FC6B /* planterTests */,
+				4A15DC4B22D6533200CAA240 /* FaceProcessor */,
 			);
 		};
 /* End PBXProject section */
@@ -401,6 +455,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4A15DC4822D6533200CAA240 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A15DC5322D6535700CAA240 /* FIleSystem.swift in Sources */,
+				4A15DC4F22D6533200CAA240 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A20C38922D53B8500C9FC6B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -486,6 +549,24 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		4A15DC5022D6533200CAA240 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		4A15DC5122D6533200CAA240 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		4A20C3A922D53B8600C9FC6B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -812,6 +893,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4A15DC5222D6533200CAA240 /* Build configuration list for PBXNativeTarget "FaceProcessor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A15DC5022D6533200CAA240 /* Debug */,
+				4A15DC5122D6533200CAA240 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4A20C3AD22D53B8600C9FC6B /* Build configuration list for PBXNativeTarget "planter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
