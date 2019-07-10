@@ -23,7 +23,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
             
-            let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true, post:true)
+            let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true)
+                .exclude(other: FileLoader(recursive: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true))
+            loader.process()
             
             window.rootViewController = UIHostingController(rootView: ContentView(myGroups: loader))
             self.window = window

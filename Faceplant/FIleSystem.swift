@@ -299,10 +299,13 @@ class FileLoader  : BindableObject {
                     let full =  (dir as NSString).appendingPathComponent(x)
                     
                     if (f.fileExists(atPath: full, isDirectory: &isDir) ){
-                        let adds = FileLoader.recursive(dirs: [dir], kinds: kinds, isImage: isImage)
+                        if isDir.boolValue {
+                        let adds = FileLoader.recursive(dirs: [full], kinds: kinds, isImage: isImage)
                         for v in adds {
                             files.append(v)
                         }
+                        }
+                        
                     }
                     
                 }
@@ -383,21 +386,32 @@ class FileLoader  : BindableObject {
         
     }
     
-    init(_ path:String, kinds:[String], isImage:Bool = true,post:Bool=false){
+    private init(path:String, files:[ ACFileStatus]){
         source = path
-        files = FileLoader.contentsOf(path, kinds:kinds, isImage:isImage)
-        if (post){
-            process()
-        }
+        self.files = files
     }
     
-    init(recursive path:String, kinds:[String], isImage:Bool = true,post:Bool=false){
-        source = path
-        files = FileLoader.recursive(dirs:[source], kinds:kinds, isImage:isImage)
-        if (post){
-            process()
-        }
+   convenience init(_ path:String, kinds:[String], isImage:Bool = true){
+        //source = path
+        //files = FileLoader.contentsOf(path, kinds:kinds, isImage:isImage)
+        self.init(path:path,files:FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
     }
+    
+     convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
+       
+        
+        self.init(path:path,files: FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
+       
+    }
+    
+    func exclude(other:FileLoader)->FileLoader{
+        let exclude = Set<String>(other.files.map({return $0.info.key}))
+        let nextFiles = files.filter({!exclude.contains($0.info.key)})
+        return FileLoader(path: self.source, files: nextFiles)
+ 
+    }
+    
+  
     
     
     
