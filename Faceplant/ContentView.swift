@@ -15,9 +15,10 @@ struct FileView : View {
     @ObjectBinding var info:ACFileStatus
     
     var body: some View {
+        let im = info.image!
         
-        Image(nsImage: info.image!)
-            .frame(width: ACFileStatus.thumbSize.width , height: ACFileStatus.thumbSize.height ).padding()
+        return Image(nsImage: info.image!)
+            .frame(width: inf , height: ACFileStatus.thumbSize.height ).padding()
             .background(Color.white.cornerRadius(8))
         
         
@@ -32,16 +33,76 @@ struct FileView : View {
     @ObjectBinding var info:ACFileStatus
     
     var body: some View {
+         let im = info.image!
+        let rad:CGFloat = 8
         
-        Image(uiImage: info.image!)
-            .frame(width: ACFileStatus.thumbSize.width , height: ACFileStatus.thumbSize.height ).padding(3)
-            .background(Color.gray.cornerRadius(8))
+       
+        if info.isKeeper{
+            return Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding()
+            .background(Color.blue.cornerRadius(rad))
+        } else {
+            return Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding(6)
+            .background(Color.gray.cornerRadius(rad))
+        }
         
         
         
     }
     
 }
+
+struct DetailView : View {
+    
+    @ObjectBinding var loader:FileLoader
+    @ObjectBinding var info:ACFileStatus
+   
+    func imageDetail()->AnyView{
+        //let index = max(loader.selectIndex,0)
+       // let info = loader.files[index]
+        
+        let im = info.makeScale(maxDim: 300)!
+        
+        let rad:CGFloat = 8
+        
+        
+        if info.isKeeper{
+            return AnyView(
+                Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding(3)
+                .background(Color.blue.cornerRadius(rad))
+            )
+            
+        } else {
+            return AnyView(Image(uiImage: im)
+                .frame(width: im.size.width , height: im.size.height ).padding(3)
+                .background(Color.gray.cornerRadius(rad))
+    )
+    
+        }
+    }
+    
+    var body: some View {
+        
+       
+      
+        HStack{
+            imageDetail()
+            VStack{
+                Toggle(isOn: $info.isKeeper){
+                    Text("Keep")
+                }
+                //Toggle(loader.files[max(loader.selectIndex,0)]).keeper,
+            }
+        }
+        
+        
+        
+    }
+    
+}
+
 #endif
 
 struct GroupView : View {
@@ -88,6 +149,7 @@ struct ContentView : View {
         Group{
             if (!myGroups.groups.isEmpty){
                 Slider(value: $myGroups.theshold, from: 1, through: 40, by: 0.5)
+                DetailView(loader: myGroups,info: myGroups.files[max(0,myGroups.selectIndex)])
             }
             
             ScrollView(.vertical, showsIndicators: true){

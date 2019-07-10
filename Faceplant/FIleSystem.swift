@@ -163,23 +163,26 @@ class ACFileStatus   {
     
     func makeThumb(){
         guard self.image == nil else {return}
-        //let url = URL(fileURLWithPath: info.path)
-       // DispatchQueue.main.async {
-            //print("making thumbnail: \(self.info.path)")
-            
-            if let im = UIImage(contentsOfFile: self.info.path){
-                
-                let renderer = UIGraphicsImageRenderer(size: ACFileStatus.thumbSize)
-                self.image =   renderer.image { (context) in
-                    im.draw(in: CGRect(origin: .zero, size: ACFileStatus.thumbSize))
-                }
-                
-               
-                print("stopped thumbnail: \(self.info.path)")
-            } else {
-                print("No image for \(self.info.path)")
+        self.image = makeScale(maxDim: ACFileStatus.thumbSize.height)
+        
+    }
+    
+    func makeScale(maxDim:CGFloat)->UIImage?{
+        
+        if let im = UIImage(contentsOfFile: self.info.path){
+            let longest = max(im.size.height,im.size.width)
+            let scale = maxDim/longest
+            let size = CGSize(width:im.size.width*scale,height: im.size.height*scale)
+            let renderer = UIGraphicsImageRenderer(size: size)
+            return   renderer.image { (context) in
+                im.draw(in: CGRect(origin: .zero, size: size))
             }
-      //  }
+            
+            
+           
+        }
+        return nil
+        //  }
     }
     
     #endif
@@ -252,9 +255,19 @@ class FileLoader  : BindableObject {
         }
     }
     
+    var selectIndex:Int = -1  {
+        didSet {
+            DispatchQueue.main.async {
+                self.didChange.send(self)
+                self.process()
+            }
+            
+        }
+    }
+    
   
     
-    private var files:[ACFileStatus] = []
+    let files:[ACFileStatus]
     
     var source:String
     
@@ -386,28 +399,30 @@ class FileLoader  : BindableObject {
         
     }
     
-    private init(path:String, files:[ ACFileStatus]){
+    private init(path:String, _ f:[ ACFileStatus]){
         source = path
-        self.files = files
+        files = f.sorted{$0.info.key < $1.info.key}
+        
+        //c
     }
     
    convenience init(_ path:String, kinds:[String], isImage:Bool = true){
         //source = path
         //files = FileLoader.contentsOf(path, kinds:kinds, isImage:isImage)
-        self.init(path:path,files:FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
+        self.init(path:path,FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
     }
     
      convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
        
         
-        self.init(path:path,files: FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
+        self.init(path:path,FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
        
     }
     
     func exclude(other:FileLoader)->FileLoader{
         let exclude = Set<String>(other.files.map({return $0.info.key}))
         let nextFiles = files.filter({!exclude.contains($0.info.key)})
-        return FileLoader(path: self.source, files: nextFiles)
+        return FileLoader(path: self.source, nextFiles)
  
     }
     
