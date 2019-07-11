@@ -30,23 +30,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             other.save()
             
-            let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true)
-                .exclude(other: other)
-            
-            loader.save()
+           
             
             //loader.process()
             
             /*
  
- 
+             let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true)
+             .exclude(other: other)
+             
+             loader.save()
+            
+         
+            */
             
             let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG"], isImage: true)
-               // .exclude(other: other)
+            // .exclude(other: other)
             
             loader.save()
-            */
-            let nl = loader.search(term: "swimming")
+            print("about to process")
+            
+            let nl = loader.search(term: "child")
             nl.process()
            
             
