@@ -21,7 +21,7 @@ extension ACFileStatus{
         }
         return unknown
     }
-
+    
 }
 
 let start = Date()
@@ -113,11 +113,11 @@ extension  FileLoader  {
             
             func clusterInside(acluster:[ACFileStatus])->ACFileStatus{
                 let allDistance = acluster.map { x in
-
-                        return (totalDistance:acluster.reduce(Float(0)){ total, check in
-                            return total + x.distance(check,unknown: 100000)
-                        },value:x)
-                    }
+                    
+                    return (totalDistance:acluster.reduce(Float(0)){ total, check in
+                        return total + x.distance(check,unknown: 100000)
+                    },value:x)
+                }
                 
                 let winner = allDistance.reduce(allDistance[0]){ best, next in
                     if next.totalDistance < best.totalDistance {
@@ -129,28 +129,147 @@ extension  FileLoader  {
             }
             
             centroids = clusters.map({clusterInside(acluster:$0)})
-        
-          
+            
+            
         }
         
         for x in centroids{
             print("open \(x.info.path)")
         }
-            
+        
     }
-
     
     
+    func updateKeeper(file:String){
+        var handle:FileHandle? = nil
+        do {
+            handle = try FileHandle(forWritingTo: URL(fileURLWithPath: file))
+            if let f = handle, let line = "path,year,month,term,value\n".data(using: .utf8) {
+                f.seekToEndOfFile()
+                f.write(line)
+                
+            }
+        } catch {
+            print(error)
+        }
+        for status in files {
+            
+            if status.info.path.contains( "/Keeper/") {
+                status.isKeeper = true
+                for (x,v) in status.categories{
+                    let m = status.info.date.month ?? 0
+                    let y = status.info.date.year ?? 0
+                    if let f = handle, let line = "\"\(status.info.path)\",\(y),\(m),\"\(x)\",\(v)\n".data(using: .utf8)  {
+                        f.write(line)
+                    }
+                }
+            }
+        }
+        
+        
+        do {
+            if let f = handle{
+                try f.close()
+            }
+        } catch {
+            print(error)
+        }
+        save()
+    }
 }
 
-print("Hello, World!")
+struct PhotoRecord{
+    let path:String
+    let month:Int
+    let year:Int
+    let category:String
+    let level:Float
+    
+    static func from(_ s:String)-> PhotoRecord? {
+        
+        let records = s.split(separator: ",")
+        
+        guard records.count == 5 else {
+            return nil
+        }
+        
+        let path:String = records[0].replacingOccurrences(of: "\"", with: "")
+        let month:Int = Int(records[2]) ?? 0
+        let year:Int = Int(records[1]) ?? 0
+        let category:String = records[3].replacingOccurrences(of: "\"", with: "")
+        let level:Float  = Float(records[4]) ?? 0
+        return PhotoRecord(path: path, month: month, year: year, category: category, level: level)
+    }
+    
+    static func run(file:String =  "/Users/arthurconner/code/photostudy/terms.csv"){
+        guard let file = try? String(contentsOfFile:file) else {
+            print("no go")
+            fatalError()
+        }
+        
+        let records = file.split(separator: "\n").compactMap{rec in
+            return PhotoRecord.from(String(rec))
+        }
+        
+        for i in 1..<5{
+            print(records[i])
+        }
+        
+        let commonset:Set<String> = ["people","child","teen","structure","adult"]
+        
+        for y in 2016..<2019{
+            for m in 1..<13{
+                let vals = records.filter({$0.year == y && $0.month == m})
+                if !vals.isEmpty {
+                    
+                    let freq:[String:Float] = vals.reduce(into: [String: Float](),{ dict,  rec in
+                        if (!commonset.contains(rec.category)){
+                            dict[rec.category] = dict[rec.category,default:0] + rec.level
+                        }
+                    })
+                    
+                    if let f = freq.first{
+                        let winner = freq.reduce(f,{best,current in
+                            if current.value > best.value  {
+                                return current
+                            }
+                            return best
+                        })
+                        print("\(m) \(y) \(winner.key) in \(winner.value)")
+                        let winList = vals.filter({$0.category == winner.key})
+                        for x in winList {
+                            print("open \(x.path)")
+                        }
+                    }
+                } else {
+                    print("\(m) \(y) no records")
+                }
+                
+            }
+        }
+    }
+}
 
 
 
-let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG"], isImage: true)
-main.save()
-checkTime("Loaded files")
-main.findFar(count: 16, tot: 16000)
+
+
+//let winner:[String,
+let file = "/Users/arthurconner/code/photostudy/vals.csv"
+
+do {
+    if  FileManager.default.fileExists(atPath: file) {
+        try FileManager.default.removeItem(atPath: file)
+    }
+      FileManager.default.createFile(atPath: file, contents: nil, attributes: nil)
+} catch {
+    print("error with files \(error)")
+}
+
+let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG","JPEG","PNG"], isImage: true)
+main.updateKeeper(file: file)
+PhotoRecord.run(file: file)
+
 
 
 

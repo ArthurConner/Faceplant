@@ -231,13 +231,20 @@ class FileLoader  : BindableObject, Codable {
         
     }
     
-    func save(){
+    func save( _ savePath:String?=nil){
         let jsonEncoder = JSONEncoder()
         
+        let url:URL
+        
+        if let p = savePath{
+           url = URL(fileURLWithPath: p)
+        } else {
+            url = URL(fileURLWithPath: (source as NSString).appendingPathComponent("Status.json"))
+        }
         jsonEncoder.outputFormatting = .prettyPrinted
         if let data =  try? jsonEncoder.encode(self){
             // print(s)
-            try? data.write(to:URL(fileURLWithPath: (source as NSString).appendingPathComponent("Status.json")))
+            try? data.write(to:url)
         }
     }
     
