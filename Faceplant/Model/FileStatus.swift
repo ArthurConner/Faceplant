@@ -68,6 +68,12 @@ struct FileInfo : Codable {
     }
 }
 
+
+struct PeopleBounds : Codable{
+    let name:String
+    let bounds:CGRect
+}
+
 class ACFileStatus : Codable{
     let info: FileInfo
     
@@ -78,15 +84,16 @@ class ACFileStatus : Codable{
     }
     var categories: [String: Float] = [:]
     var terms: [String: Float] = [:]
-    var faces:[CGRect] = []
+    var people:[PeopleBounds] = []
     
     enum CodingKeys: String, CodingKey {
         case info = "file"
         case key = "StatusKey"
         case isKeeper = "Keeper"
-       case categories
+        case categories
         case terms
-       // case searchterms = "Terms"
+        case people
+        // case searchterms = "Terms"
         //case faces
     }
     
@@ -96,6 +103,7 @@ class ACFileStatus : Codable{
         guard let (s,i) = FileInfo.make(path: path, isImage: isImage) else { return nil}
         self.key = s
         self.info = i
+       // print("making item")
     }
     
     func updateMe(){
@@ -110,8 +118,6 @@ class ACFileStatus : Codable{
         }
     }
     
-   
-  
     func dest(root:String)->String{
         
         let last = isKeeper  ? "Keeper" : "Extra"
@@ -155,10 +161,9 @@ class ACFileStatus : Codable{
     
     #else
     static let thumbSize = CGSize(width: 96, height: 96)
-    
-    
+
     func makeScale(maxDim:CGFloat)->UIImage?{
-        print("making thumbnail: \(self.info.path)")
+        print("making thumbnail: \(self.info.path) size \(maxDim)")
         if let im = UIImage(contentsOfFile: self.info.path){
             let longest = max(im.size.height,im.size.width)
             let scale = maxDim/longest
@@ -167,12 +172,9 @@ class ACFileStatus : Codable{
             return   renderer.image { (context) in
                 im.draw(in: CGRect(origin: .zero, size: size))
             }
-            
-            
-            
+
         }
         return nil
-        //  }
     }
     
     #endif
@@ -217,38 +219,48 @@ extension ACFileStatus : Identifiable{
     }
     
     func analyse(){
-         return
         
-        // Classify the images
-        //print("going to \(self.info.path)")
         let url = URL(fileURLWithPath: info.path)
-       // let url = URL(fileURLWithPath: self.info.path)
-      
-       
-       
-         let handler = VNImageRequestHandler(url: url, options: [:])
-         let request = VNClassifyImageRequest()
         
-         try? handler.perform([request])
+        let handler = VNImageRequestHandler(url: url, options: [:])
+        let request = VNClassifyImageRequest()
         
-         // Process classification results
-         guard let observations = request.results as? [VNClassificationObservation] else {
-         categories = [:]
-         terms = [:]
-         return
-         }
+        try? handler.perform([request])
         
-         categories = observations
-         .filter { $0.hasMinimumRecall(0.01, forPrecision: 0.9) }
-         .reduce(into: [String: VNConfidence]()) { dict, observation in dict[observation.identifier] = observation.confidence }
-         
-         terms = observations
-         .filter { $0.hasMinimumPrecision(0.01, forRecall: 0.7) }
-         .reduce(into: [String: VNConfidence]()) { (dict, observation) in dict[observation.identifier] = observation.confidence }
-         
-         
+        // Process classification results
+        if let observations = request.results  as? [VNClassificationObservation] {
+            
+            categories = observations
+                .filter { $0.hasMinimumRecall(0.01, forPrecision: 0.9) }
+                .reduce(into: [String: VNConfidence]()) { dict, observation in dict[observation.identifier] = observation.confidence }
+            
+            terms = observations
+                .filter { $0.hasMinimumPrecision(0.01, forRecall: 0.7) }
+                .reduce(into: [String: VNConfidence]()) { (dict, observation) in dict[observation.identifier] = observation.confidence }
+        }  else    {
+            categories = [:]
+            terms = [:]
+            
+        }
+        //print("got cats")
+        
+        let req2 = VNDetectHumanRectanglesRequest()
+        
+        try? handler.perform([req2])
+        
+        // Process classification results
+        if let observations = req2.results  as? [VNDetectedObjectObservation] {
+            people = observations.map{PeopleBounds(name: "unknown", bounds: $0.boundingBox)}
+            
+            
+        } else {
+            //print(" foo \(req2.results)")
+            people = []
+        }
+        //print("got pep")
+        
     }
-   
+    
 }
 
 extension ACFileStatus : BindableObject {

@@ -50,7 +50,7 @@ class FileLoader  : BindableObject, Codable {
     
     var theshold:Float = 10.0  {
         didSet {
-            self.process()
+            self.makeClusters()
         }
     }
     
@@ -125,7 +125,7 @@ class FileLoader  : BindableObject, Codable {
         
     }
     
-    func process(){
+    func makeClusters(){
         
         DispatchQueue.global(qos: .background).async {
             guard !self.files.isEmpty else { return }
@@ -187,7 +187,7 @@ class FileLoader  : BindableObject, Codable {
     private convenience init(path:String, paths:Set<String>,isImage:Bool){
         let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent("Status.json"))
         let decoder =  JSONDecoder()
-       
+        
         var statusArray:[ACFileStatus] = []
         var other:FileLoader? = nil
         let unknowns:[ACFileStatus]
@@ -203,7 +203,11 @@ class FileLoader  : BindableObject, Codable {
         }
         
         statusArray.append(contentsOf: unknowns)
+        var i = 0
         for x in unknowns {
+            i += 1 
+            print("start \(i) out of \(unknowns.count)")
+            
             x.analyse()
         }
         
@@ -212,8 +216,9 @@ class FileLoader  : BindableObject, Codable {
     }
     
     convenience init(_ path:String, kinds:[String], isImage:Bool = true){
-
+        
         let paths = Set<String>(FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
+        print("got some files \(path.count)")
         
         self.init(path:path,paths:paths,isImage:isImage)
         
@@ -223,7 +228,7 @@ class FileLoader  : BindableObject, Codable {
     convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
         let paths = Set<String>(FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
         self.init(path:path,paths:paths,isImage:isImage)
-    
+        
     }
     
     func save(){
@@ -231,7 +236,7 @@ class FileLoader  : BindableObject, Codable {
         
         jsonEncoder.outputFormatting = .prettyPrinted
         if let data =  try? jsonEncoder.encode(self){
-           // print(s)
+            // print(s)
             try? data.write(to:URL(fileURLWithPath: (source as NSString).appendingPathComponent("Status.json")))
         }
     }
@@ -244,10 +249,10 @@ class FileLoader  : BindableObject, Codable {
     }
     
     func search(term:String)->FileLoader{
-       
+        
         let nextFiles = files.filter({$0.matches(term)})
         return FileLoader(path: self.source, nextFiles)
         
     }
-
+    
 }

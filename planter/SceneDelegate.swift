@@ -10,12 +10,9 @@ import UIKit
 import SwiftUI
 import Vision
 
-
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -25,33 +22,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use a UIHostingController as window root view controller
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            
-            let other = FileLoader(recursive: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true)
-            
-            other.save()
-            
-           
-            
+ 
             //loader.process()
             
             /*
  
+             let other = FileLoader(recursive: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true)
+             
+             other.save()
+             
              let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true)
              .exclude(other: other)
              
              loader.save()
             
-         
+            let loader = FileLoader("/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true)
             */
             
-            let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG"], isImage: true)
+           //
             // .exclude(other: other)
+         
+            let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG",".png"], isImage: true)
             
             loader.save()
             print("about to process")
             
             let nl = loader.search(term: "child")
-            nl.process()
+            nl.makeClusters()
            
             
             window.rootViewController = UIHostingController(rootView: ContentView(myGroups: nl))
