@@ -35,7 +35,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             loader.save()
             
-            loader.process()
+            //loader.process()
             
             /*
  
@@ -45,12 +45,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                // .exclude(other: other)
             
             loader.save()
-            
-            let nl = loader.search(term: "child")
-            nl.process()
             */
+            let nl = loader.search(term: "swimming")
+            nl.process()
+           
             
-            window.rootViewController = UIHostingController(rootView: ContentView(myGroups: loader))
+            window.rootViewController = UIHostingController(rootView: ContentView(myGroups: nl))
             self.window = window
             window.makeKeyAndVisible()
         }
