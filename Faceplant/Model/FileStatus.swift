@@ -158,7 +158,7 @@ class ACFileStatus : Codable{
     
     
     func makeScale(maxDim:CGFloat)->UIImage?{
-        
+        print("making thumbnail: \(self.info.path)")
         if let im = UIImage(contentsOfFile: self.info.path){
             let longest = max(im.size.height,im.size.width)
             let scale = maxDim/longest
@@ -179,6 +179,7 @@ class ACFileStatus : Codable{
     
     
     lazy var features:VNFeaturePrintObservation? = {
+        print("features: \(self.info.path)")
         let url = URL(fileURLWithPath: info.path)
         let requestHandler = VNImageRequestHandler(url: url, options: [:])
         let request = VNGenerateImageFeaturePrintRequest()
@@ -200,11 +201,26 @@ extension ACFileStatus : Identifiable{
         return info.id
     }
     
+    
+    func matches(_ m:String)->Bool{
+        for (k, _) in terms {
+            if  m.caseInsensitiveCompare(k) == .orderedSame {
+                return true
+            }
+        }
+        for (k, _) in categories {
+            if  m.caseInsensitiveCompare(k) == .orderedSame {
+                return true
+            }
+        }
+        return false
+    }
+    
     func analyse(){
-        
+         return
         
         // Classify the images
-        print("going to \(self.info.path)")
+        //print("going to \(self.info.path)")
         let url = URL(fileURLWithPath: info.path)
        // let url = URL(fileURLWithPath: self.info.path)
       
@@ -232,6 +248,7 @@ extension ACFileStatus : Identifiable{
          
          
     }
+   
 }
 
 extension ACFileStatus : BindableObject {

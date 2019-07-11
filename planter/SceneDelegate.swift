@@ -37,6 +37,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
             loader.process()
             
+            /*
+ 
+ 
+            
+            let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG"], isImage: true)
+               // .exclude(other: other)
+            
+            loader.save()
+            
+            let nl = loader.search(term: "child")
+            nl.process()
+            */
             
             window.rootViewController = UIHostingController(rootView: ContentView(myGroups: loader))
             self.window = window

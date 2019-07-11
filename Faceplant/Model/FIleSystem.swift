@@ -242,5 +242,12 @@ class FileLoader  : BindableObject, Codable {
         return FileLoader(path: self.source, nextFiles)
         
     }
+    
+    func search(term:String)->FileLoader{
+       
+        let nextFiles = files.filter({$0.matches(term)})
+        return FileLoader(path: self.source, nextFiles)
+        
+    }
 
 }
