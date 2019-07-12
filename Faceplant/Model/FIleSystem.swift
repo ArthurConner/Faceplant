@@ -28,7 +28,20 @@ extension ACFileGroup : Identifiable{
 
 class FileLoader  : BindableObject, Codable {
     
-    let files:[ACFileStatus]
+
+    
+    public private(set) var files:[ACFileStatus]{
+        didSet {
+            DispatchQueue.main.async {
+                self.didChange.send(self)
+            }
+        }
+    }
+    
+    private var outStanding:[String] = []
+    
+    var clusterOnLoad:Bool = false
+    
     var source:String
     let didChange = PassthroughSubject<FileLoader, Never>()
     
@@ -175,12 +188,67 @@ class FileLoader  : BindableObject, Codable {
         }
     }
     
-    private init(path:String, _ f:[ ACFileStatus], _ other:FileLoader? = nil){
+    private func loadSome(i:Int,isImage:Bool){
+        let max = self.outStanding.count
+        let bump = 30
+        
+        guard (i < max) else {
+            print("nothing outstanding")
+            self.outStanding = []
+           
+            
+            if clusterOnLoad {
+            
+            self.makeClusters()
+            }
+            return
+        }
+        print("\(self.outStanding.count - i) remain")
+        
+        
+        let batch = Array(self.outStanding[i..<min(i+bump,max-1)])
+       
+     
+            
+        DispatchQueue.global(qos: .userInitiated).async {
+           // [weak self] in
+       
+        let nextArray = batch.compactMap({ACFileStatus(path: $0, isImage: isImage)})
+                
+                for x in nextArray {
+                    x.analyse()
+                }
+            
+            DispatchQueue.main.async {
+            // [weak self] in
+                self.files.append(contentsOf: nextArray)
+                self.save()
+                let j = min(i+bump,max-1)
+                
+                    if j != i {
+                        self.loadSome(i:j, isImage: isImage)
+                    } else {
+                        self.loadSome(i:max, isImage: isImage)
+                }
+                
+            }
+            
+        }
+        
+       
+    }
+    
+    private init(path:String, existing f:[ ACFileStatus],  otherLoader:FileLoader? = nil, outstanding out:[String]? = nil, isImage:Bool = true){
         source = path
         files = f.sorted{$0.info.key < $1.info.key}
-        if let o = other {
+        if let o = otherLoader {
             selectIndex = o.selectIndex
             theshold = o.theshold
+        }
+        if let p = out, !p.isEmpty{
+            self.outStanding = p
+            
+            loadSome(i:0, isImage:isImage)
         }
     }
     
@@ -190,28 +258,22 @@ class FileLoader  : BindableObject, Codable {
         
         var statusArray:[ACFileStatus] = []
         var other:FileLoader? = nil
-        let unknowns:[ACFileStatus]
+        let unknowns:[String]
         if let data = try? Data(contentsOf: savePath, options: .mappedIfSafe),
             let main  = try? decoder.decode(FileLoader.self,from: data) {
             //
             statusArray =  main.files.filter{paths.contains($0.info.path)}
             let excludePaths = Set<String>(statusArray.map({return $0.info.path}))
-            unknowns = paths.filter({return !excludePaths.contains($0)}).compactMap({return ACFileStatus(path: $0, isImage: isImage)})
+            unknowns = paths.filter({return !excludePaths.contains($0)})
             other = main
         } else {
-            unknowns = paths.compactMap({return ACFileStatus(path: $0, isImage: isImage)})
+            unknowns = Array(paths)
         }
         
-        statusArray.append(contentsOf: unknowns)
-        var i = 0
-        for x in unknowns {
-            i += 1 
-            print("start \(i) out of \(unknowns.count)")
-            
-            x.analyse()
-        }
+
         
-        self.init(path:path,statusArray, other)
+        
+        self.init(path:path, existing: statusArray,  otherLoader:other, outstanding:unknowns)
         
     }
     
@@ -251,14 +313,14 @@ class FileLoader  : BindableObject, Codable {
     func exclude(other:FileLoader)->FileLoader{
         let exclude = Set<String>(other.files.map({return $0.info.key}))
         let nextFiles = files.filter({!exclude.contains($0.info.key)})
-        return FileLoader(path: self.source, nextFiles)
+        return FileLoader(path: self.source, existing: nextFiles)
         
     }
     
     func search(term:String)->FileLoader{
         
         let nextFiles = files.filter({$0.matches(term)})
-        return FileLoader(path: self.source, nextFiles)
+        return FileLoader(path: self.source, existing: nextFiles)
         
     }
     
