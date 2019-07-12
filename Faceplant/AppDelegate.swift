@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let loader = FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true)
         loader.save()
-        loader.process()
+        loader.makeClusters()
         
         window.contentView = NSHostingView(rootView: ContentView(myGroups: loader))
 
