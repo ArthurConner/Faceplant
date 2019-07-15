@@ -162,14 +162,20 @@ struct GroupView : View {
 
 struct ContentView : View {
     
-    @ObjectBinding var myGroups:FileLoader
-    @ObjectBinding var monitor:ProgressMonitor
+    @ObjectBinding var obj:ProgessWatcher<FileLoader>
+ 
     
     var body: some View {
-        
-        Group{
+        let myGroups = obj.item
+        let details = obj.monitor.details
+       
+        return Group{
+            
+            if !details.isEmpty{
+                ProgressGroupView(monitor: obj.monitor).padding().frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
             if (!myGroups.groups.isEmpty){
-                Slider(value: $myGroups.theshold, from: 1, through: 40, by: 0.5)
+                Slider(value: $obj.item.theshold, from: 1, through: 40, by: 0.5)
                 DetailView(loader: myGroups,info: myGroups.files[max(0,myGroups.selectIndex)])
             }
             
@@ -180,21 +186,22 @@ struct ContentView : View {
                     
                 }
                 //}.background(Color.purple)
-            }.padding()
+            }.padding().padding().frame(maxWidth: .infinity, maxHeight: .infinity)
             //  .background(Color.pink)
             
-        }.padding().frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        
     }
     
+}
 }
 
 
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
-        let mymont = ProgressMonitor()
-        
-        return ContentView(myGroups:FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: mymont),monitor:mymont)
+        let mymont = ProgessWatcher(item: FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: nil))
+        return ContentView(obj:mymont)
     }
 }
 #endif

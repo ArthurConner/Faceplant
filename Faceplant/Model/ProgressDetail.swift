@@ -66,20 +66,58 @@ class ProgressMonitor : BindableObject {
             return
         }
         
-        x.update(amount: amount)
-        updateMe()
+        
+        if amount + x.distance >= x.total {
+            finish(key: key)
+        } else {
+            x.update(amount: amount)
+            //print("updating \(key) \(x.distance) out of \(x.total)")
+            updateMe()
+        }
     }
     
     func finish(key:String){
-        guard let x = keeper[key] else {
-            print("trying to finish progress on \(key) and we don't know about it")
-            return
-        }
-        update(key: key, amount: x.total)
+        keeper.removeValue(forKey: key)
+        updateMe()
+        
     }
     
     var details:[(name:String,last:Date,distance:Int,total:Int)]{
         return self.keeper.values.map{ $0.record }.sorted(by: {$0.name < $1.name})
+    }
+    
+}
+
+class ProgessWatcher<A:BindableObject>: BindableObject {
+    var item:A
+    var monitor = ProgressMonitor(){
+        didSet {
+            updateMe()
+        }
+    }
+    
+    private func updateMe(){
+        DispatchQueue.main.async {
+            self.didChange.send((item:self.item,monitor:self.monitor))
+        }
+    }
+    var didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
+    
+    init(item i:A){
+        self.item = i
+        
+        let _ = self.monitor.didChange.sink(receiveValue: {[weak self] (x) in
+            if let s = self {
+                s.updateMe()
+            }
+        })
+      
+        let _ = self.item.didChange.sink(receiveValue: {[weak self] (x) in
+            if let s = self {
+               s.updateMe()
+            }
+        })
+        
     }
     
 }

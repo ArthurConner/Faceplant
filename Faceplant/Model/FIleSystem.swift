@@ -32,7 +32,7 @@ class FileLoader  : BindableObject, Codable {
     let files:[ACFileStatus]
     var source:String
     let didChange = PassthroughSubject<FileLoader, Never>()
-   
+    weak var loader:ProgressMonitor? = nil
     
     enum CodingKeys: String, CodingKey {
         case files
@@ -128,9 +128,11 @@ class FileLoader  : BindableObject, Codable {
     
     func makeClusters(){
         
-        DispatchQueue.global(qos: .background).async {
-            guard !self.files.isEmpty else { return }
+        DispatchQueue.global(qos: .background).async { [weak loader] in
             
+            guard !self.files.isEmpty else { return }
+            let k1 = "cluster \(self.source)"
+            loader?.add(key: k1, name: "clustering", total: self.files.count + 1)
             let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
             
             var ret:[ACFileGroup] = []
@@ -165,6 +167,7 @@ class FileLoader  : BindableObject, Codable {
                 } else {
                     current.append(check)
                 }
+                loader?.update(key: k1, amount: 1)
                 
             }
             
@@ -172,6 +175,7 @@ class FileLoader  : BindableObject, Codable {
             print("we have \(ret.count) groups for \(self.theshold)")
             DispatchQueue.main.async {
                 self.groups = ret
+                 loader?.finish(key: k1)
             }
         }
     }
@@ -215,8 +219,9 @@ class FileLoader  : BindableObject, Codable {
         
             let k1 = "checking \(path)"
             let k2 =  "\(path)analyze"
-        loader?.add(key:k1, name: k1, total: unknowns.count)
-        loader?.add(key:k2, name: "analysing \(path)", total: unknowns.count)
+            let mName = (path as NSString).lastPathComponent
+        loader?.add(key:k1, name: "check \(mName)", total: unknowns.count)
+        loader?.add(key:k2, name: "look \(mName)", total: unknowns.count)
             
             var details:[ACFileStatus] = []
             for x in unknowns {

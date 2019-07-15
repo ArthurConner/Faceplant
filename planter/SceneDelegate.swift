@@ -45,25 +45,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
            // let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG",".png"], isImage: true)
             
             let blankLoader = FileLoader.empty
-            let monitor = ProgressMonitor()
+            
             /*
- 
+ let monitor = ProgressMonitor()
             loader.save()
             print("about to process")
             
-            let nl = loader.search(term: "child")
+            let nl = loader.search(term
+             let mymont = ProgessWatcher(item: FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: nil))
+             return ContentView(obj:mymont): "child")
             nl.makeClusters()
            */
-            let cv = ContentView(myGroups: blankLoader, monitor: monitor)
+            let mymont = ProgessWatcher(item: blankLoader)
+            let cv = ContentView(obj: mymont)
+            let monitor = mymont.monitor
             window.rootViewController = UIHostingController(rootView:cv )
-            
+            let k1 = "adding files"
+            monitor.add(key: k1, name: k1,total:3)
             DispatchQueue.global(qos: .userInitiated).async {
-                let other = FileLoader(recursive: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true,loader: monitor)
-                let loader = FileLoader(flat:"/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true,loader: monitor)
+                let other = FileLoader(flat: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true,loader: monitor)
+                monitor.update(key: k1, amount: 1)
+                let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG"], isImage: true,loader: monitor)
+                monitor.update(key: k1, amount: 1)
                 loader.save()
-                
+                other.save()
+                monitor.finish(key: k1)
                 DispatchQueue.main.async {
-                    cv.myGroups = loader
+                    cv.obj.item = loader.exclude(other: other)
+                    cv.obj.item.loader = cv.obj.monitor
+                    cv.obj.item.makeClusters()
                 }
                 
                 
