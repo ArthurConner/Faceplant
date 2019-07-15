@@ -42,8 +42,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
            //
             // .exclude(other: other)
          
-            let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG",".png"], isImage: true)
+           // let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG",".png"], isImage: true)
             
+            let blankLoader = FileLoader.empty
+            let monitor = ProgressMonitor()
             /*
  
             loader.save()
@@ -52,8 +54,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let nl = loader.search(term: "child")
             nl.makeClusters()
            */
+            let cv = ContentView(myGroups: blankLoader, monitor: monitor)
+            window.rootViewController = UIHostingController(rootView:cv )
             
-            window.rootViewController = UIHostingController(rootView: ContentView(myGroups: loader))
+            DispatchQueue.global(qos: .userInitiated).async {
+                let other = FileLoader(recursive: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true,loader: monitor)
+                let loader = FileLoader(flat:"/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true,loader: monitor)
+                loader.save()
+                
+                DispatchQueue.main.async {
+                    cv.myGroups = loader
+                }
+                
+                
+            }
             self.window = window
             window.makeKeyAndVisible()
         }

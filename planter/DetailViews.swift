@@ -163,6 +163,7 @@ struct GroupView : View {
 struct ContentView : View {
     
     @ObjectBinding var myGroups:FileLoader
+    @ObjectBinding var monitor:ProgressMonitor
     
     var body: some View {
         
@@ -191,7 +192,9 @@ struct ContentView : View {
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
-        ContentView(myGroups:FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true))
+        let mymont = ProgressMonitor()
+        
+        return ContentView(myGroups:FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: mymont),monitor:mymont)
     }
 }
 #endif

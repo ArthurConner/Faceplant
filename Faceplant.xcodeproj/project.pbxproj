@@ -33,6 +33,8 @@
 		4ACC59D122DCF9B500317930 /* ProgressDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D022DCF9B500317930 /* ProgressDetail.swift */; };
 		4ACC59D222DCF9B500317930 /* ProgressDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D022DCF9B500317930 /* ProgressDetail.swift */; };
 		4ACC59D322DCF9B500317930 /* ProgressDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D022DCF9B500317930 /* ProgressDetail.swift */; };
+		4ACC59D522DD000200317930 /* ProgressGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D422DD000200317930 /* ProgressGroupView.swift */; };
+		4ACC59D622DD000200317930 /* ProgressGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D422DD000200317930 /* ProgressGroupView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +106,7 @@
 		4A9E9B3E22D8EE9A00521291 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
 		4A9E9B4022D8EEBC00521291 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
 		4ACC59D022DCF9B500317930 /* ProgressDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDetail.swift; sourceTree = "<group>"; };
+		4ACC59D422DD000200317930 /* ProgressGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressGroupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -274,6 +277,7 @@
 			isa = PBXGroup;
 			children = (
 				4A85C3D622D3C4E0006E6D6C /* ContentView.swift */,
+				4ACC59D422DD000200317930 /* ProgressGroupView.swift */,
 			);
 			path = CommonViews;
 			sourceTree = "<group>";
@@ -509,6 +513,7 @@
 				4A9E9B3F22D8EE9A00521291 /* DetailViews.swift in Sources */,
 				4A20C39222D53B8500C9FC6B /* SceneDelegate.swift in Sources */,
 				4A20C3AF22D53BC600C9FC6B /* ContentView.swift in Sources */,
+				4ACC59D622DD000200317930 /* ProgressGroupView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,6 +535,7 @@
 				4A85C40422D3C5B8006E6D6C /* FIleSystem.swift in Sources */,
 				4A85C3D522D3C4E0006E6D6C /* AppDelegate.swift in Sources */,
 				4A3D4FC422D6749600FF24CA /* FileStatus.swift in Sources */,
+				4ACC59D522DD000200317930 /* ProgressGroupView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

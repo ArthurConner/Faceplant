@@ -78,7 +78,7 @@ class ProgressMonitor : BindableObject {
         update(key: key, amount: x.total)
     }
     
-    var details:[(name:String,last:Date,Distance:Int,Total:Int)]{
+    var details:[(name:String,last:Date,distance:Int,total:Int)]{
         return self.keeper.values.map{ $0.record }.sorted(by: {$0.name < $1.name})
     }
     

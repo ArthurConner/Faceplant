@@ -29,22 +29,10 @@ extension ACFileGroup : Identifiable{
 class FileLoader  : BindableObject, Codable {
     
 
-    
-    public private(set) var files:[ACFileStatus]{
-        didSet {
-            DispatchQueue.main.async {
-                self.didChange.send(self)
-            }
-        }
-    }
-    
-    private var outStanding:[String] = []
-    
-    var clusterOnLoad:Bool = false
-    
+    let files:[ACFileStatus]
     var source:String
     let didChange = PassthroughSubject<FileLoader, Never>()
-    
+   
     
     enum CodingKeys: String, CodingKey {
         case files
@@ -188,77 +176,24 @@ class FileLoader  : BindableObject, Codable {
         }
     }
     
-    private func loadSome(i:Int,isImage:Bool){
-        let max = self.outStanding.count
-        let bump = 30
-        
-        guard (i < max) else {
-            print("nothing outstanding")
-            self.outStanding = []
-           
-            
-            if clusterOnLoad {
-            
-            self.makeClusters()
-            }
-            return
-        }
-        print("\(self.outStanding.count - i) remain")
-        
-        
-        let batch = Array(self.outStanding[i..<min(i+bump,max-1)])
-       
-     
-            
-        DispatchQueue.global(qos: .userInitiated).async {
-           // [weak self] in
-       
-        let nextArray = batch.compactMap({ACFileStatus(path: $0, isImage: isImage)})
-                
-                for x in nextArray {
-                    x.analyse()
-                }
-            
-            DispatchQueue.main.async {
-            [weak self] in
-                
-                guard let _ = self else {
-                    print("not updating what we think we should")
-                    return
-                }
-                
-                self?.files.append(contentsOf: nextArray)
-                self?.save()
-                let j = min(i+bump,max-1)
-                
-                    if j != i {
-                        self?.loadSome(i:j, isImage: isImage)
-                    } else {
-                        self?.loadSome(i:max, isImage: isImage)
-                }
-                
-            }
-            
-        }
-        
-       
-    }
+  
     
-    private init(path:String, existing f:[ ACFileStatus],  otherLoader:FileLoader? = nil, outstanding out:[String]? = nil, isImage:Bool = true){
+    private init(path:String, existing f:[ ACFileStatus],  otherLoader:FileLoader? = nil){
         source = path
         files = f.sorted{$0.info.key < $1.info.key}
         if let o = otherLoader {
             selectIndex = o.selectIndex
             theshold = o.theshold
         }
-        if let p = out, !p.isEmpty{
-            self.outStanding = p
-            
-            loadSome(i:0, isImage:isImage)
-        }
+      
     }
     
-    private convenience init(path:String, paths:Set<String>,isImage:Bool){
+    static let empty = FileLoader(path: "", existing: [])
+    
+    private convenience init(path:String,
+                             paths:Set<String>,
+                             isImage:Bool,
+                             loader:ProgressMonitor?){
         let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent("Status.json"))
         let decoder =  JSONDecoder()
         
@@ -276,26 +211,49 @@ class FileLoader  : BindableObject, Codable {
             unknowns = Array(paths)
         }
         
-
+        if !unknowns.isEmpty{
+        
+            let k1 = "checking \(path)"
+            let k2 =  "\(path)analyze"
+        loader?.add(key:k1, name: k1, total: unknowns.count)
+        loader?.add(key:k2, name: "analysing \(path)", total: unknowns.count)
+            
+            var details:[ACFileStatus] = []
+            for x in unknowns {
+                if let a = ACFileStatus(path: x, isImage: isImage){
+                    details.append(a)
+                }
+                loader?.update(key: k1, amount: 1)
+            }
+            
+            loader?.finish(key: k1)
+            for y in details{
+                y.analyse()
+                loader?.update(key: k2, amount: 1)
+            }
+            loader?.finish(key: k2)
+            
+            statusArray.append(contentsOf: details)
+        }
         
         
-        self.init(path:path, existing: statusArray,  otherLoader:other, outstanding:unknowns)
+        self.init(path:path, existing: statusArray,   otherLoader:other)
         
     }
     
-    convenience init(_ path:String, kinds:[String], isImage:Bool = true){
+    convenience init(flat path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?){
         
         let paths = Set<String>(FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
         print("got some files \(path.count)")
         
-        self.init(path:path,paths:paths,isImage:isImage)
+        self.init(path:path,paths:paths,isImage:isImage,loader:loader)
         
         
     }
     
-    convenience init(recursive path:String, kinds:[String], isImage:Bool = true){
+    convenience init(recursive path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?){
         let paths = Set<String>(FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
-        self.init(path:path,paths:paths,isImage:isImage)
+        self.init(path:path,paths:paths,isImage:isImage,loader:loader)
         
     }
     
