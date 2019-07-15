@@ -266,7 +266,8 @@ do {
     print("error with files \(error)")
 }
 
-let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG","JPEG","PNG"], isImage: true)
+let loud = LoudProgress()
+let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG","JPEG","PNG"], isImage: true,loader: loud)
 main.updateKeeper(file: file)
 PhotoRecord.run(file: file)
 

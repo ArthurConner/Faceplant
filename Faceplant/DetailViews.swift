@@ -162,32 +162,38 @@ struct GroupView : View {
 
 struct ContentView : View {
     
-    @ObjectBinding var myGroups:FileLoader
+    @ObjectBinding var obj:ProgessWatcher<FileLoader>
     
     var body: some View {
         
-        Group{
-            if (!myGroups.groups.isEmpty){
-                Slider(value: $myGroups.theshold, from: 1, through: 40, by: 0.5)
-                DetailView(loader: myGroups,info: myGroups.files[max(0,myGroups.selectIndex)])
-                // ScrollView(.vertical, showsIndicators: true){
-                // VStack{
-                List(myGroups.groups) { landmark in
-                    GroupView(group: landmark).frame(height:ACFileStatus.thumbSize.height + 10)
-                    
-                }
-                    //}.background(Color.purple)
-                    // }.padding(20)
-                    .background(Color.red)
-                
-            } else {
-                List(myGroups.files) { landmark in
-                    Text(landmark.key)
-                    
-                }
-                .background(Color.orange)
-            }
+        let myGroups = obj.item
+        let details = obj.monitor.details
+        
+        return Group{
             
+            if !details.isEmpty{
+                ProgressGroupView(monitor: obj.monitor)
+            } else {
+                if (!myGroups.groups.isEmpty){
+                    Slider(value:$obj.item.theshold, from: 1, through: 40, by: 0.5)
+                    DetailView(loader: myGroups,info: myGroups.files[max(0,myGroups.selectIndex)])
+                    
+                    List(myGroups.groups) { landmark in
+                        GroupView(group: landmark).frame(height:ACFileStatus.thumbSize.height + 10)
+                        
+                    }
+                        
+                        .background(Color.red)
+                    
+                } else {
+                    List(myGroups.files) { landmark in
+                        Text(landmark.key)
+                        
+                    }
+                    .background(Color.orange)
+                }
+                
+            }
         }.padding().frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
@@ -197,7 +203,10 @@ struct ContentView : View {
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
-        ContentView(myGroups:FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true))
+        let foo = ProgessWatcher(item: FileLoader.empty)
+        return ContentView(obj: foo)
     }
 }
 #endif
+
+

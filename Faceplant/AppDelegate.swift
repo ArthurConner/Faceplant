@@ -11,10 +11,10 @@ import SwiftUI
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-
+    
     var window: NSWindow!
-
-
+    
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
         window = NSWindow(
@@ -23,24 +23,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered, defer: false)
         window.center()
         window.setFrameAutosaveName("Main Window")
-
-        let loader = FileLoader("/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true)
-        loader.save()
-        loader.makeClusters()
         
-        window.contentView = NSHostingView(rootView: ContentView(myGroups: loader))
-
+        let mymont = ProgessWatcher(item: FileLoader.empty)
+        let cv = ContentView(obj: mymont)
+        let monitor = mymont.monitor
+        
+        let k1 = "adding files"
+        monitor.add(key: k1, name: k1,total:2)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let loader = FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: monitor)
+            
+            loader.save()
+            monitor.update(key: k1, amount: 1)
+            loader.makeClusters()
+            
+            monitor.finish(key: k1)
+            DispatchQueue.main.async {
+                cv.obj.item = loader
+                cv.obj.item.loader = cv.obj.monitor
+                cv.obj.item.makeClusters()
+                cv.obj.item.loader = nil
+            }
+        }
+        window.contentView = NSHostingView(rootView: cv)
         window.makeKeyAndOrderFront(nil)
-        
-       
-        
-      
-    }
 
+    }
+    
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
-
-
+    
+    
 }
+
 

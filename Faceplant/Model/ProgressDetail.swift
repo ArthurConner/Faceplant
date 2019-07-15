@@ -16,7 +16,7 @@ class ProgressMonitor : BindableObject {
         var name:String
         var distance:Int
         var total:Int
-        var updates = [Date()]
+        var updates = Date()
         
         init(name n:String, total t:Int) {
             self.distance = 0
@@ -25,7 +25,7 @@ class ProgressMonitor : BindableObject {
         }
         
         func update(amount:Int){
-            updates.append( Date())
+            updates =  Date()
             self.distance = min(self.distance+amount,total)
         }
         var isDone:Bool{
@@ -33,7 +33,7 @@ class ProgressMonitor : BindableObject {
         }
         
         var record:(name:String,last:Date,distance:Int,total:Int){
-            return (name:self.name,last:updates.last ?? Date(),distance:distance,total:total)
+            return (name:self.name,last:updates,distance:distance,total:total)
         }
         
     }
@@ -86,6 +86,35 @@ class ProgressMonitor : BindableObject {
         return self.keeper.values.map{ $0.record }.sorted(by: {$0.name < $1.name})
     }
     
+    fileprivate func info(of:String)->(name:String,last:Date,distance:Int,total:Int)?{
+        
+        return self.keeper[of]?.record
+    }
+    
+}
+
+class LoudProgress : ProgressMonitor {
+    private  var lastTime:[String:Date] = [:]
+    var interval:TimeInterval = 3
+    
+    override func add(key: String, name: String, total: Int) {
+        lastTime[key] = Date()
+        super.add(key: key, name: name, total: total)
+    }
+    override func update(key: String, amount: Int) {
+       super.update(key: key, amount: amount)
+        if let d = lastTime[key],
+            d.timeIntervalSinceNow < -interval,
+            let x  = super.info(of: key){
+            print("updating \(key) \(x.distance) out of \(x.total)")
+            lastTime[key] = Date()
+        }
+    }
+    
+    override func finish(key: String) {
+        super.finish(key: key)
+        lastTime.removeValue(forKey: key)
+    }
 }
 
 class ProgessWatcher<A:BindableObject>: BindableObject {
