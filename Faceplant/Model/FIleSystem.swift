@@ -128,7 +128,9 @@ class FileLoader  : BindableObject, Codable {
     
     func makeClusters(){
         
-        DispatchQueue.global(qos: .background).async { [weak loader] in
+        DispatchQueue.global(qos: .background).async { [weak loader, weak self] in
+            
+            guard let self = self else { return }
             
             guard !self.files.isEmpty else { return }
             let k1 = "cluster \(self.source)"
@@ -136,6 +138,10 @@ class FileLoader  : BindableObject, Codable {
             let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
             
             var ret:[ACFileGroup] = []
+            for v in f {
+                _ = v.features
+                loader?.update(key: k1, amount: 1)
+            }
             let unknown = f.filter{ $0.features == nil }
             if !unknown.isEmpty {
                 ret.append(ACFileGroup(unknown))
@@ -167,7 +173,7 @@ class FileLoader  : BindableObject, Codable {
                 } else {
                     current.append(check)
                 }
-                loader?.update(key: k1, amount: 1)
+                
                 
             }
             

@@ -65,7 +65,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             DispatchQueue.global(qos: .userInitiated).async {
                 let other = FileLoader(flat: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true,loader: monitor)
                 monitor.update(key: k1, amount: 1)
-                let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG"], isImage: true,loader: monitor)
+                let loader = FileLoader(recursive:"/Users/arthurconner/Downloads/Mertreat 2018", kinds: [".JPG"], isImage: true,loader: monitor)
                 monitor.update(key: k1, amount: 1)
                 loader.save()
                 other.save()

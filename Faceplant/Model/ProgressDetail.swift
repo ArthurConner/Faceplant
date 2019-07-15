@@ -118,35 +118,53 @@ class LoudProgress : ProgressMonitor {
 }
 
 class ProgessWatcher<A:BindableObject>: BindableObject {
-    var item:A
-    var monitor = ProgressMonitor(){
+    var item:A{
         didSet {
             updateMe()
+            self.changelistners(item:item )
         }
     }
+    var monitor = ProgressMonitor()
     
     private func updateMe(){
         DispatchQueue.main.async {
+            
             self.didChange.send((item:self.item,monitor:self.monitor))
+           
         }
     }
-    var didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
+    let didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
-    init(item i:A){
-        self.item = i
-        
-        let _ = self.monitor.didChange.sink(receiveValue: {[weak self] (x) in
+    var montSink:Subscribers.Sink<ProgressMonitor, Never>? = nil
+    var itemSink:Subscribers.Sink<A.PublisherType.Output, Never>? = nil
+    
+    func changelistners(item i:A){
+        if let m = montSink {
+            m.cancel()
+        }
+        montSink = self.monitor.didChange.sink(receiveValue: {[weak self] (x) in
             if let s = self {
                 s.updateMe()
             }
         })
-      
-        let _ = self.item.didChange.sink(receiveValue: {[weak self] (x) in
+        
+        if let s = itemSink {
+            s.cancel()
+        }
+        
+       itemSink = i.didChange
+        .sink(receiveValue: {[weak self] (x) in
             if let s = self {
-               s.updateMe()
+                s.updateMe()
             }
         })
         
+        //self.monitor.
+    }
+    init(item i:A){
+        self.item = i
+        changelistners(item: i)
+
     }
     
 }
