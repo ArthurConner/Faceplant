@@ -220,15 +220,21 @@ class FileLoader  : BindableObject, Codable {
                 }
             
             DispatchQueue.main.async {
-            // [weak self] in
-                self.files.append(contentsOf: nextArray)
-                self.save()
+            [weak self] in
+                
+                guard let _ = self else {
+                    print("not updating what we think we should")
+                    return
+                }
+                
+                self?.files.append(contentsOf: nextArray)
+                self?.save()
                 let j = min(i+bump,max-1)
                 
                     if j != i {
-                        self.loadSome(i:j, isImage: isImage)
+                        self?.loadSome(i:j, isImage: isImage)
                     } else {
-                        self.loadSome(i:max, isImage: isImage)
+                        self?.loadSome(i:max, isImage: isImage)
                 }
                 
             }

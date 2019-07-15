@@ -44,14 +44,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
          
             let loader = FileLoader(recursive:"/Users/arthurconner/Downloads", kinds: [".JPG",".png"], isImage: true)
             
+            /*
+ 
             loader.save()
             print("about to process")
             
             let nl = loader.search(term: "child")
             nl.makeClusters()
-           
+           */
             
-            window.rootViewController = UIHostingController(rootView: ContentView(myGroups: nl))
+            window.rootViewController = UIHostingController(rootView: ContentView(myGroups: loader))
             self.window = window
             window.makeKeyAndVisible()
         }
