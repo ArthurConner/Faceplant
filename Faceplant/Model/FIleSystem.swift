@@ -13,7 +13,7 @@ import Combine
 import Vision
 
 
-class ACFileGroup {
+class ACFileGroup : Codable {
     let members:[ACFileStatus]
     init(_ m: [ACFileStatus]) {
         members = m
@@ -31,6 +31,7 @@ class FileLoader  : BindableObject, Codable {
 
     let files:[ACFileStatus]
     var source:String
+    var name:String = "Status.json"
     let didChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
     var isClustering = false
@@ -40,6 +41,7 @@ class FileLoader  : BindableObject, Codable {
         case theshold
         case selectIndex
         case source
+        case groups
     }
     
     var groups: [ACFileGroup] = [] {
@@ -202,6 +204,9 @@ class FileLoader  : BindableObject, Codable {
         if let o = otherLoader {
             selectIndex = o.selectIndex
             theshold = o.theshold
+            if f.count == o.files.count {
+                self.groups = o.groups
+            }
         }
       
     }
@@ -211,8 +216,8 @@ class FileLoader  : BindableObject, Codable {
     private convenience init(path:String,
                              paths:Set<String>,
                              isImage:Bool,
-                             loader:ProgressMonitor?){
-        let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent("Status.json"))
+                             loader:ProgressMonitor?,name:String){
+        let savePath = URL(fileURLWithPath: (path as NSString).appendingPathComponent(name))
         let decoder =  JSONDecoder()
         
         var statusArray:[ACFileStatus] = []
@@ -257,22 +262,22 @@ class FileLoader  : BindableObject, Codable {
         
         
         self.init(path:path, existing: statusArray,   otherLoader:other)
-        
+        self.name = name
     }
     
-    convenience init(flat path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?){
+    convenience init(flat path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?, name:String = "FStatus.json"){
         
         let paths = Set<String>(FileLoader.contentsOf(path, kinds:kinds, isImage:isImage))
         print("got some files \(path.count)")
         
-        self.init(path:path,paths:paths,isImage:isImage,loader:loader)
+        self.init(path:path,paths:paths,isImage:isImage,loader:loader,name:name)
         
         
     }
     
-    convenience init(recursive path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?){
+    convenience init(recursive path:String, kinds:[String], isImage:Bool = true,loader:ProgressMonitor?, name:String = "RStatus.json"){
         let paths = Set<String>(FileLoader.recursive(dirs:[path], kinds:kinds, isImage:isImage))
-        self.init(path:path,paths:paths,isImage:isImage,loader:loader)
+        self.init(path:path,paths:paths,isImage:isImage,loader:loader,name:name)
         
     }
     
@@ -284,7 +289,7 @@ class FileLoader  : BindableObject, Codable {
         if let p = savePath{
            url = URL(fileURLWithPath: p)
         } else {
-            url = URL(fileURLWithPath: (source as NSString).appendingPathComponent("Status.json"))
+            url = URL(fileURLWithPath: (source as NSString).appendingPathComponent(name))
         }
         jsonEncoder.outputFormatting = .prettyPrinted
         if let data =  try? jsonEncoder.encode(self){

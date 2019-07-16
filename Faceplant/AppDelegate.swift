@@ -29,24 +29,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let monitor = mymont.monitor
         
         let k1 = "adding files"
-        monitor.add(key: k1, name: k1,total:2)
+        monitor.add(key: k1, name: k1,total:1)
         DispatchQueue.global(qos: .userInitiated).async {
             
             //let path = "/Volumes/Zoetrope/images"
             
             let path = "/Volumes/Zoetrope/images/2018/08/Keeper"
             
-            let loader = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: monitor)
+            let loader = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: monitor,name:"Status.json")
             
             loader.save()
             monitor.update(key: k1, amount: 1)
-            loader.makeClusters()
+          
             
             monitor.finish(key: k1)
             DispatchQueue.main.async {
                 cv.obj.item = loader
                 cv.obj.item.loader = cv.obj.monitor
-                cv.obj.item.makeClusters()
+                if loader.groups.isEmpty {
+                    loader.makeClusters()
+                }
                 //cv.obj.item.loader = nil
             }
         }

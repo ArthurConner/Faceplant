@@ -16,8 +16,10 @@ struct ThumbnailView : View {
     
     
     var body: some View {
-        let im = info.image ?? NSImage()
+       let im = info.image ?? NSImage(named: "torando.svg")!
         let rad:CGFloat = 8
+        
+      
         
         if info.isKeeper{
             return Image(nsImage: im)
@@ -77,12 +79,14 @@ struct GroupView : View {
     var group:ACFileGroup
     @ObjectBinding var loader:FileLoader
     
-    
+    /*
+  
     func imageDetail(info:ACFileStatus)->AnyView{
         
         guard let im = info.image else {
             return AnyView(
                 Text("Loading")
+                info.imagereload()
             )
         }
         let rad:CGFloat = 8
@@ -102,6 +106,7 @@ struct GroupView : View {
             
         }
     }
+    */
     
     var body: some View {
         
