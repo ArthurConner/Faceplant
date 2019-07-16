@@ -33,6 +33,7 @@ class FileLoader  : BindableObject, Codable {
     var source:String
     let didChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
+    var isClustering = false
     
     enum CodingKeys: String, CodingKey {
         case files
@@ -51,7 +52,14 @@ class FileLoader  : BindableObject, Codable {
     
     var theshold:Float = 10.0  {
         didSet {
-            self.makeClusters()
+            if !isClustering {
+                isClustering = true
+            
+            DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 3){
+                self.makeClusters()
+                self.isClustering = false
+            }
+            }
         }
     }
     
@@ -299,4 +307,27 @@ class FileLoader  : BindableObject, Codable {
         
     }
     
+    func indexOf(key:String)->Int?{
+        var lowerIndex = 0;
+        var upperIndex = files.count - 1
+        
+        while (true) {
+            let currentIndex = (lowerIndex + upperIndex)/2
+            if(files[currentIndex].key == key) {
+                return currentIndex
+            } else if (lowerIndex > upperIndex) {
+                return nil
+            } else {
+                if (files[currentIndex].key > key) {
+                    upperIndex = currentIndex - 1
+                } else {
+                    lowerIndex = currentIndex + 1
+                }
+            }
+        }
+    }
+    
 }
+
+
+

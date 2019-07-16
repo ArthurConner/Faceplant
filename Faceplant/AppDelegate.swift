@@ -31,7 +31,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let k1 = "adding files"
         monitor.add(key: k1, name: k1,total:2)
         DispatchQueue.global(qos: .userInitiated).async {
-            let loader = FileLoader(flat:"/Volumes/Zoetrope/Keeper", kinds: [".JPG"], isImage: true,loader: monitor)
+            
+            //let path = "/Volumes/Zoetrope/images"
+            
+            let path = "/Volumes/Zoetrope/images/2018/08/Keeper"
+            
+            let loader = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: monitor)
             
             loader.save()
             monitor.update(key: k1, amount: 1)
@@ -42,7 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 cv.obj.item = loader
                 cv.obj.item.loader = cv.obj.monitor
                 cv.obj.item.makeClusters()
-                cv.obj.item.loader = nil
+                //cv.obj.item.loader = nil
             }
         }
         window.contentView = NSHostingView(rootView: cv)

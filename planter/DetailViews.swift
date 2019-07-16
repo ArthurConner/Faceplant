@@ -72,7 +72,7 @@ struct DetailView : View {
 
 #else
 
-struct FileView : View {
+struct ThumbnailView : View {
     
     @ObjectBinding var info:ACFileStatus
     

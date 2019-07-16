@@ -181,7 +181,7 @@ class ACFileStatus : Codable{
     
     
     lazy var features:VNFeaturePrintObservation? = {
-        print("features: \(self.info.path)")
+        //print("features: \(self.info.path)")
         let url = URL(fileURLWithPath: info.path)
         let requestHandler = VNImageRequestHandler(url: url, options: [:])
         let request = VNGenerateImageFeaturePrintRequest()
