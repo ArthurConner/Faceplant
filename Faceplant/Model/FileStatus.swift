@@ -103,11 +103,12 @@ class ACFileStatus : Codable{
         guard let (s,i) = FileInfo.make(path: path, isImage: isImage) else { return nil}
         self.key = s
         self.info = i
-       // print("making item")
+        // print("making item")
     }
     
     func updateMe(){
-        DispatchQueue.main.async {
+        DispatchQueue.main.async {[weak self] in
+            guard let self = self else { return }
             self.didChange.send(self)
         }
     }
@@ -136,17 +137,17 @@ class ACFileStatus : Codable{
             self?.image = self?.makeScale(maxDim: ACFileStatus.thumbSize.height)
         }
     }
-        
+    
     
     
     #if os(OSX)
-        
+    
     var image:NSImage?{
         didSet{
             updateMe()
         }
     }
-        
+    
     static let thumbSize = NSSize(width: 128, height: 128)
     
     func makeScale(maxDim:CGFloat)->NSImage?{
@@ -173,12 +174,12 @@ class ACFileStatus : Codable{
     #else
     var image:UIImage? {
         didSet {
-        updateMe()
-    }
+            updateMe()
+        }
     }
     
     static let thumbSize = CGSize(width: 96, height: 96)
-
+    
     func makeScale(maxDim:CGFloat)->UIImage?{
         print("making thumbnail: \(self.info.path) size \(maxDim)")
         if let im = UIImage(contentsOfFile: self.info.path){
@@ -189,7 +190,7 @@ class ACFileStatus : Codable{
             return   renderer.image { (context) in
                 im.draw(in: CGRect(origin: .zero, size: size))
             }
-
+            
         }
         return nil
     }

@@ -34,7 +34,6 @@ class FileLoader  : BindableObject, Codable {
     var name:String = "Status.json"
     let didChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
-    var isComputingCluster = false
     
     enum CodingKeys: String, CodingKey {
         case files
@@ -42,6 +41,13 @@ class FileLoader  : BindableObject, Codable {
         case selectIndex
         case source
         case groups
+    }
+    
+    var isComputingCluster = false{
+        didSet {
+            updateMe()
+            
+        }
     }
     
     
@@ -63,13 +69,16 @@ class FileLoader  : BindableObject, Codable {
         }
     }()
     
+    func updateMe(){
+        DispatchQueue.main.async {[weak self] in
+            guard let self = self else { return }
+            self.didChange.send(self)
+        }
+    }
+    
     var groups: [ACFileGroup] = [] {
         didSet {
-            DispatchQueue.main.async {
-                [weak self] in
-                guard let self = self else { return }
-                self.didChange.send(self)
-            }
+           updateMe()
         }
     }
     
@@ -83,9 +92,7 @@ class FileLoader  : BindableObject, Codable {
     
     var selectIndex:Int = -1  {
         didSet {
-            DispatchQueue.main.async {
-                self.didChange.send(self)
-            }
+            updateMe()
             
         }
     }
