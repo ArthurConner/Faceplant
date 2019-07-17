@@ -13,73 +13,52 @@ import SwiftUI
 struct ThumbnailView : View {
     
     @ObjectBinding var info:ACFileStatus
+    @ObjectBinding var im:ImageFileResource
+    let radius:CGFloat
     
     var body: some View {
-        let im:UIImage
-        if let i = info.image{
-            im = i
-        } else {
-            im = UIImage(named: "empty.jpeg")!
-            info.loadImage()
-        }
-        let rad:CGFloat = 8
+     
+        Image(uiImage: im.image)
+                .frame(width: im.image.size.width , height: im.image.size.height ).padding()
+                .background(info.background(rad: radius))
         
-        if info.isKeeper{
-            return Image(uiImage: im)
-                .frame(width: im.size.width , height: im.size.height ).padding()
-                .background(Color.blue.cornerRadius(rad))
-        } else {
-            return Image(uiImage: im)
-                .frame(width: im.size.width , height: im.size.height ).padding(6)
-                .background(Color.gray.cornerRadius(rad))
-        }
     }
     
 }
+
+/*
 
 struct DetailView : View {
     
     @ObjectBinding var loader:FileLoader
     @ObjectBinding var info:ACFileStatus
+    @ObjectBinding var im:ImageFileResource
     
-    func imageDetail()->AnyView{
-        //let index = max(loader.selectIndex,0)
-        // let info = loader.files[index]
-        
-        let im = info.makeScale(maxDim: 300)!
-        
-        let rad:CGFloat = 8
-        
-        
-        if info.isKeeper{
-            return AnyView(
-                Image(uiImage: im)
-                    .frame(width: im.size.width , height: im.size.height ).padding(3)
-                    .background(Color.blue.cornerRadius(rad))
-            )
-            
-        } else {
-            return AnyView(Image(uiImage: im)
-                .frame(width: im.size.width , height: im.size.height ).padding(3)
-                .background(Color.gray.cornerRadius(rad))
-            )
-            
-        }
-    }
-    
+
     var body: some View {
-        HStack{
-            imageDetail()
+        
+        let background:_ModifiedContent<Color, _ClipEffect<RoundedRectangle>>
+           im.reload()
+        if info.isKeeper {
+            background  = Color.blue.cornerRadius(10)
+        } else {
+            background  = Color.gray.cornerRadius(10)
+        }
+        
+        return HStack{
+            Image(uiImage: im.image)
+                .frame(width: im.maxDim , height: im.maxDim ).padding(3)
+                .background(background)
+            
             VStack{
                 Toggle(isOn: $info.isKeeper){
                     Text("Keep")
                 }
-                //Toggle(loader.files[max(loader.selectIndex,0)]).keeper,
             }
         }
     }
     
 }
-
+*/
 
 

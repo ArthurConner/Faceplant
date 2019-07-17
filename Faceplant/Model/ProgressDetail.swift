@@ -12,6 +12,36 @@ import SwiftUI
 
 class ProgressMonitor : BindableObject {
     
+    init(){ }
+    
+    func add(key:String,name:String, total:Int){
+        keeper[key] = Progress(name: name, total: total)
+        updateMe()
+    }
+    
+    func update(key:String,amount:Int) {
+        guard let x = keeper[key] else {
+            print("trying to update progress on \(key) and we don't know about it")
+            return
+        }
+        
+        if amount + x.distance >= x.total {
+            finish(key: key)
+        } else {
+            x.update(amount: amount)
+            updateMe()
+        }
+    }
+    
+    func finish(key:String){
+        keeper.removeValue(forKey: key)
+        updateMe()
+    }
+    
+    var details:[(name:String,last:Date,distance:Int,total:Int)]{
+        return self.keeper.values.map{ $0.record }.sorted(by: {$0.name < $1.name})
+    }
+    
     private class Progress{
         var name:String
         var distance:Int
@@ -37,6 +67,7 @@ class ProgressMonitor : BindableObject {
         }
         
     }
+    
     private var keeper:[String:Progress] = [:]{
         didSet {
             updateMe()
@@ -44,50 +75,15 @@ class ProgressMonitor : BindableObject {
     }
     
     let didChange = PassthroughSubject<ProgressMonitor, Never>()
-    
-    init(){
-        
-    }
+ 
     
     private func updateMe(){
         DispatchQueue.main.async {
             self.didChange.send(self)
         }
     }
-    
-    func add(key:String,name:String, total:Int){
-        keeper[key] = Progress(name: name, total: total)
-        updateMe()
-    }
-    
-    func update(key:String,amount:Int) {
-        guard let x = keeper[key] else {
-            print("trying to update progress on \(key) and we don't know about it")
-            return
-        }
-        
-        
-        if amount + x.distance >= x.total {
-            finish(key: key)
-        } else {
-            x.update(amount: amount)
-            //print("updating \(key) \(x.distance) out of \(x.total)")
-            updateMe()
-        }
-    }
-    
-    func finish(key:String){
-        keeper.removeValue(forKey: key)
-        updateMe()
-        
-    }
-    
-    var details:[(name:String,last:Date,distance:Int,total:Int)]{
-        return self.keeper.values.map{ $0.record }.sorted(by: {$0.name < $1.name})
-    }
-    
+
     fileprivate func info(of:String)->(name:String,last:Date,distance:Int,total:Int)?{
-        
         return self.keeper[of]?.record
     }
     
@@ -124,15 +120,15 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
             self.changelistners(item:item )
         }
     }
+    
     var monitor = ProgressMonitor()
     
     private func updateMe(){
         DispatchQueue.main.async {
-            
             self.didChange.send((item:self.item,monitor:self.monitor))
-           
         }
     }
+    
     let didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
     private var mypub: Subscribers.Sink<(ProgressMonitor, A.PublisherType.Output), Never>? = nil
@@ -147,9 +143,7 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
                 if let s = self {
                     s.updateMe()
                 }
-                
         }
-        
     }
     
     init(item i:A){

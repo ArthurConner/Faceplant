@@ -1,49 +1,52 @@
 import SwiftUI
 
+
+extension ACFileStatus {
+    func background(rad:CGFloat)-> _ModifiedContent<Color, _ClipEffect<RoundedRectangle>>{
+        if isKeeper {
+            return Color.blue.cornerRadius(rad)
+        } else {
+            return Color.gray.cornerRadius(rad)
+        }
+    }
+}
+
+
+struct DetailView : View {
+    
+    @ObjectBinding var loader:FileLoader
+    @ObjectBinding var info:ACFileStatus
+    @ObjectBinding var im:ImageFileResource
+    
+    let radius:CGFloat
+    
+    var body: some View {
+        im.reload()
+        
+        return HStack{
+            ThumbnailView(info: info, im: im, radius: radius)
+            VStack{
+                Toggle(isOn: $info.isKeeper){
+                    Text("Keep")
+                }
+            }
+        }
+    }
+}
+
 struct GroupView : View {
     
     var group:ACFileGroup
     @ObjectBinding var loader:FileLoader
     
-    /*
-     
-     func imageDetail(info:ACFileStatus)->AnyView{
-     
-     guard let im = info.image else {
-     return AnyView(
-     Text("Loading")
-     info.imagereload()
-     )
-     }
-     let rad:CGFloat = 8
-     
-     if info.isKeeper{
-     return AnyView(
-     Image(nsImage: im)
-     .frame(width: im.size.width , height: im.size.height ).padding(3)
-     .background(Color.blue.cornerRadius(rad))
-     )
-     
-     } else {
-     return AnyView(Image(nsImage: im)
-     .frame(width: im.size.width , height: im.size.height ).padding(3)
-     .background(Color.gray.cornerRadius(rad))
-     )
-     
-     }
-     }
-     */
-    
     var body: some View {
-        
-        //let im = group.members.filter({$0.image != nil}).first?.image
-        
+     
         return ScrollView(.horizontal, showsIndicators: true){
             
             HStack{
                 //.filter({$0.image != nil})
                 ForEach(group.members){ x in
-                    ThumbnailView(info: x)
+                    ThumbnailView(info: x,im: x.image,radius:3)
                         .tapAction {
                             if let i = self.loader.indexOf(key:x.key){
                                 self.loader.selectIndex = i
@@ -84,10 +87,14 @@ struct ContentView : View {
                         }
                         Slider(value:$obj.item.theshold, from: 1, through: 40, by: 0.5)
                     }
-                    DetailView(loader: myGroups,info: myGroups.files[max(0,myGroups.selectIndex)])
-                    
+ 
+                    DetailView(loader: myGroups,
+                               info: myGroups.files[max(0,myGroups.selectIndex)],
+                               im: ImageFileResource(
+                                url: myGroups.files[max(0,myGroups.selectIndex)].info.path, maxDim: ImageFileResource.largeSize),
+                               radius:10)
                     List(myGroups.groups) { landmark in
-                        GroupView(group: landmark, loader: myGroups).frame(height:ACFileStatus.thumbSize.height + 10)
+                        GroupView(group: landmark, loader: myGroups).frame(height:ImageFileResource.thumbSize.height + 10)
                         
                     }
                         

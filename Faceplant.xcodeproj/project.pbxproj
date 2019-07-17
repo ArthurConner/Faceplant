@@ -37,6 +37,9 @@
 		4ACC59D622DD000200317930 /* ProgressGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D422DD000200317930 /* ProgressGroupView.swift */; };
 		4AF8377D22DF7C1E000EF1B9 /* empty.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */; };
 		4AF8377F22DF8DFD000EF1B9 /* empty.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377E22DF8DFD000EF1B9 /* empty.jpeg */; };
+		4AF8378122DFAF66000EF1B9 /* ImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF8378022DFAF66000EF1B9 /* ImageResource.swift */; };
+		4AF8378222DFAF66000EF1B9 /* ImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF8378022DFAF66000EF1B9 /* ImageResource.swift */; };
+		4AF8378322DFAF66000EF1B9 /* ImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF8378022DFAF66000EF1B9 /* ImageResource.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +114,7 @@
 		4ACC59D422DD000200317930 /* ProgressGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressGroupView.swift; sourceTree = "<group>"; };
 		4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = empty.jpeg; sourceTree = "<group>"; };
 		4AF8377E22DF8DFD000EF1B9 /* empty.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = empty.jpeg; sourceTree = "<group>"; };
+		4AF8378022DFAF66000EF1B9 /* ImageResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResource.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +209,7 @@
 				4A3D4FC322D6749600FF24CA /* FileStatus.swift */,
 				4A85C40322D3C5B8006E6D6C /* FIleSystem.swift */,
 				4ACC59D022DCF9B500317930 /* ProgressDetail.swift */,
+				4AF8378022DFAF66000EF1B9 /* ImageResource.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -507,6 +512,7 @@
 				4A7924A622D6866600386514 /* FileStatus.swift in Sources */,
 				4A15DC4F22D6533200CAA240 /* main.swift in Sources */,
 				4ACC59D322DCF9B500317930 /* ProgressDetail.swift in Sources */,
+				4AF8378322DFAF66000EF1B9 /* ImageResource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -518,6 +524,7 @@
 				4A3D4FC522D6749600FF24CA /* FileStatus.swift in Sources */,
 				4ACC59D222DCF9B500317930 /* ProgressDetail.swift in Sources */,
 				4A20C39022D53B8500C9FC6B /* AppDelegate.swift in Sources */,
+				4AF8378222DFAF66000EF1B9 /* ImageResource.swift in Sources */,
 				4A9E9B3F22D8EE9A00521291 /* DetailViews.swift in Sources */,
 				4A20C39222D53B8500C9FC6B /* SceneDelegate.swift in Sources */,
 				4A20C3AF22D53BC600C9FC6B /* ContentView.swift in Sources */,
@@ -538,6 +545,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A85C3D722D3C4E0006E6D6C /* ContentView.swift in Sources */,
+				4AF8378122DFAF66000EF1B9 /* ImageResource.swift in Sources */,
 				4ACC59D122DCF9B500317930 /* ProgressDetail.swift in Sources */,
 				4A9E9B4122D8EEBC00521291 /* DetailViews.swift in Sources */,
 				4A85C40422D3C5B8006E6D6C /* FIleSystem.swift in Sources */,

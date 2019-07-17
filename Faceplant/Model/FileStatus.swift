@@ -54,8 +54,6 @@ struct FileInfo : Codable {
         return  DateComponents(year:year,month: month)
     }
     
-    
-    
     static func make(path:String,isImage:Bool)->(String,FileInfo)?{
         
         guard let comp = FileInfo.dateURL(URL(fileURLWithPath: path),isImage: isImage) else { return nil}
@@ -64,7 +62,6 @@ struct FileInfo : Codable {
         let fname = (path as NSString).lastPathComponent
         
         return ("\(r.key)-->\(fname)",r)
-        
     }
 }
 
@@ -85,7 +82,7 @@ class ACFileStatus : Codable{
     var categories: [String: Float] = [:]
     var terms: [String: Float] = [:]
     var people:[PeopleBounds] = []
-    
+ 
     enum CodingKeys: String, CodingKey {
         case info = "file"
         case key = "StatusKey"
@@ -131,72 +128,9 @@ class ACFileStatus : Codable{
         
     }
     
-    func loadImage(){
-        DispatchQueue.global(qos: .userInitiated).async{
-            [weak self] in
-            self?.image = self?.makeScale(maxDim: ACFileStatus.thumbSize.height)
-        }
-    }
-    
-    
-    
-    #if os(OSX)
-    
-    var image:NSImage?{
-        didSet{
-            updateMe()
-        }
-    }
-    
-    static let thumbSize = NSSize(width: 128, height: 128)
-    
-    func makeScale(maxDim:CGFloat)->NSImage?{
-        
-        let url = URL(fileURLWithPath: info.path)
-        
-        print("making thumbnail: \(self.info.path)")
-        if let im = NSImage(contentsOf: url){
-            let longest = max(im.size.height,im.size.width)
-            let scale = maxDim/longest
-            let size = CGSize(width:im.size.width*scale,height: im.size.height*scale)
-            let small = NSImage(size: size)
-            let fromRect = NSRect(x: 0, y: 0, width:im.size.width, height: im.size.height)
-            small.lockFocus()
-            im.draw(in: NSRect(x: 0, y: 0, width: size.width, height: size.height), from: fromRect, operation: .copy, fraction: 1)
-            small.unlockFocus()
-            return  small
-            
-        }
-        return nil
-    }
-    
-    
-    #else
-    var image:UIImage? {
-        didSet {
-            updateMe()
-        }
-    }
-    
-    static let thumbSize = CGSize(width: 96, height: 96)
-    
-    func makeScale(maxDim:CGFloat)->UIImage?{
-        print("making thumbnail: \(self.info.path) size \(maxDim)")
-        if let im = UIImage(contentsOfFile: self.info.path){
-            let longest = max(im.size.height,im.size.width)
-            let scale = maxDim/longest
-            let size = CGSize(width:im.size.width*scale,height: im.size.height*scale)
-            let renderer = UIGraphicsImageRenderer(size: size)
-            return   renderer.image { (context) in
-                im.draw(in: CGRect(origin: .zero, size: size))
-            }
-            
-        }
-        return nil
-    }
-    
-    #endif
-    
+    lazy var image = {
+        return ImageFileResource(url: info.path, maxDim: ImageFileResource.thumbSize.width)
+    }()
     
     lazy var features:VNFeaturePrintObservation? = {
         //print("features: \(self.info.path)")
