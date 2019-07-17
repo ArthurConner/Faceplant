@@ -35,8 +35,8 @@
 		4ACC59D322DCF9B500317930 /* ProgressDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D022DCF9B500317930 /* ProgressDetail.swift */; };
 		4ACC59D522DD000200317930 /* ProgressGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D422DD000200317930 /* ProgressGroupView.swift */; };
 		4ACC59D622DD000200317930 /* ProgressGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACC59D422DD000200317930 /* ProgressGroupView.swift */; };
-		4AF8377922DE6AB6000EF1B9 /* tornado.svg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377822DE6AB6000EF1B9 /* tornado.svg */; };
-		4AF8377A22DE6AB6000EF1B9 /* tornado.svg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377822DE6AB6000EF1B9 /* tornado.svg */; };
+		4AF8377C22DF7C1E000EF1B9 /* empty.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */; };
+		4AF8377D22DF7C1E000EF1B9 /* empty.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -109,7 +109,7 @@
 		4A9E9B4022D8EEBC00521291 /* DetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViews.swift; sourceTree = "<group>"; };
 		4ACC59D022DCF9B500317930 /* ProgressDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDetail.swift; sourceTree = "<group>"; };
 		4ACC59D422DD000200317930 /* ProgressGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressGroupView.swift; sourceTree = "<group>"; };
-		4AF8377822DE6AB6000EF1B9 /* tornado.svg */ = {isa = PBXFileReference; lastKnownFileType = file; path = tornado.svg; sourceTree = SOURCE_ROOT; };
+		4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = empty.jpeg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,6 +200,7 @@
 		4A3D4FC622D674A500FF24CA /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				4AF8377B22DF7C1E000EF1B9 /* empty.jpeg */,
 				4A3D4FC322D6749600FF24CA /* FileStatus.swift */,
 				4A85C40322D3C5B8006E6D6C /* FIleSystem.swift */,
 				4ACC59D022DCF9B500317930 /* ProgressDetail.swift */,
@@ -240,7 +241,6 @@
 				4A85C3D422D3C4E0006E6D6C /* AppDelegate.swift */,
 				4A9E9B4022D8EEBC00521291 /* DetailViews.swift */,
 				4A85C3D822D3C4E4006E6D6C /* Assets.xcassets */,
-				4AF8377822DE6AB6000EF1B9 /* tornado.svg */,
 				4A85C3DD22D3C4E4006E6D6C /* Main.storyboard */,
 				4A9E9B4222D8EF7F00521291 /* CommonViews */,
 				4A3D4FC622D674A500FF24CA /* Model */,
@@ -455,8 +455,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AF8377A22DE6AB6000EF1B9 /* tornado.svg in Resources */,
 				4A20C39C22D53B8600C9FC6B /* LaunchScreen.storyboard in Resources */,
+				4AF8377D22DF7C1E000EF1B9 /* empty.jpeg in Resources */,
 				4A20C39922D53B8600C9FC6B /* Preview Assets.xcassets in Resources */,
 				4A20C39622D53B8600C9FC6B /* Assets.xcassets in Resources */,
 			);
@@ -473,8 +473,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AF8377922DE6AB6000EF1B9 /* tornado.svg in Resources */,
 				4A85C3DF22D3C4E4006E6D6C /* Main.storyboard in Resources */,
+				4AF8377C22DF7C1E000EF1B9 /* empty.jpeg in Resources */,
 				4A85C3DC22D3C4E4006E6D6C /* Preview Assets.xcassets in Resources */,
 				4A85C3D922D3C4E4006E6D6C /* Assets.xcassets in Resources */,
 			);

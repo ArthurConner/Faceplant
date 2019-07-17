@@ -135,32 +135,23 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
     }
     let didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
-    var montSink:Subscribers.Sink<ProgressMonitor, Never>? = nil
-    var itemSink:Subscribers.Sink<A.PublisherType.Output, Never>? = nil
-    
-    func changelistners(item i:A){
-        if let m = montSink {
+    private var mypub: Subscribers.Sink<(ProgressMonitor, A.PublisherType.Output), Never>? = nil
+ 
+    private func changelistners(item i:A){
+        if let m = mypub {
             m.cancel()
         }
-        montSink = self.monitor.didChange.sink(receiveValue: {[weak self] (x) in
-            if let s = self {
-                s.updateMe()
-            }
-        })
         
-        if let s = itemSink {
-            s.cancel()
+        mypub = Publishers.CombineLatest(self.monitor.didChange,i.didChange)
+            .sink{[weak self] (x) in
+                if let s = self {
+                    s.updateMe()
+                }
+                
         }
         
-       itemSink = i.didChange
-        .sink(receiveValue: {[weak self] (x) in
-            if let s = self {
-                s.updateMe()
-            }
-        })
-        
-        //self.monitor.
     }
+    
     init(item i:A){
         self.item = i
         changelistners(item: i)

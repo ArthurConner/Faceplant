@@ -16,7 +16,14 @@ struct ThumbnailView : View {
     
     
     var body: some View {
-       let im = info.image ?? NSImage(named: "torando.svg")!
+        let im:NSImage
+        if let i = info.image{
+        im = i
+        } else {
+            im = NSImage(named: "empty.jpeg")!
+            info.loadImage()
+        }
+        
         let rad:CGFloat = 8
         
       
@@ -115,7 +122,8 @@ struct GroupView : View {
         return ScrollView(.horizontal, showsIndicators: true){
             
             HStack{
-                ForEach(group.members.filter({$0.image != nil})){ x in
+                //.filter({$0.image != nil})
+                ForEach(group.members){ x in
                     ThumbnailView(info: x)
                         .tapAction {
                             if let i = self.loader.indexOf(key:x.key){

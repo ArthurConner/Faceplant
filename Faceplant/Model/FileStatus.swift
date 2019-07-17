@@ -130,12 +130,23 @@ class ACFileStatus : Codable{
         
     }
     
-    lazy var image = {
-        return makeScale(maxDim: ACFileStatus.thumbSize.height)
-    }()
+    func loadImage(){
+        DispatchQueue.global(qos: .userInitiated).async{
+            [weak self] in
+            self?.image = self?.makeScale(maxDim: ACFileStatus.thumbSize.height)
+        }
+    }
+        
     
     
     #if os(OSX)
+        
+    var image:NSImage?{
+        didSet{
+            updateMe()
+        }
+    }
+        
     static let thumbSize = NSSize(width: 128, height: 128)
     
     func makeScale(maxDim:CGFloat)->NSImage?{
@@ -160,6 +171,12 @@ class ACFileStatus : Codable{
     
     
     #else
+    var image:UIImage? {
+        didSet {
+        updateMe()
+    }
+    }
+    
     static let thumbSize = CGSize(width: 96, height: 96)
 
     func makeScale(maxDim:CGFloat)->UIImage?{

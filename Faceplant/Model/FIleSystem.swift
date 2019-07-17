@@ -34,7 +34,7 @@ class FileLoader  : BindableObject, Codable {
     var name:String = "Status.json"
     let didChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
-    var isClustering = false
+    var isComputingCluster = false
     
     enum CodingKeys: String, CodingKey {
         case files
@@ -44,9 +44,30 @@ class FileLoader  : BindableObject, Codable {
         case groups
     }
     
+    
+    lazy var updateClusters = {
+        
+        return PassthroughSubject<Bool, Never>()
+            /*
+             .debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
+             .drop(while:{[weak self] x in
+             guard let self = self else {return false}
+             print(self.isComputingCluster)
+             return self.isComputingCluster})
+             */
+            .sink{[weak self] x in
+                guard let self = self else {return}
+                
+                 self.makeClusters()
+               
+        }
+    }()
+    
     var groups: [ACFileGroup] = [] {
         didSet {
             DispatchQueue.main.async {
+                [weak self] in
+                guard let self = self else { return }
                 self.didChange.send(self)
             }
         }
@@ -54,13 +75,8 @@ class FileLoader  : BindableObject, Codable {
     
     var theshold:Float = 10.0  {
         didSet {
-            if !isClustering {
-                isClustering = true
-            
-            DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 3){
-                self.makeClusters()
-                self.isClustering = false
-            }
+            if !isComputingCluster {
+             let _  = updateClusters.receive(true)
             }
         }
     }
@@ -138,6 +154,8 @@ class FileLoader  : BindableObject, Codable {
     
     func makeClusters(){
         
+        self.isComputingCluster = true
+        
         DispatchQueue.global(qos: .background).async { [weak loader, weak self] in
             
             guard let self = self else { return }
@@ -189,9 +207,11 @@ class FileLoader  : BindableObject, Codable {
             
             ret.append(ACFileGroup(current))
             print("we have \(ret.count) groups for \(self.theshold)")
-            DispatchQueue.main.async {
+            DispatchQueue.main.async {[weak self] in
+                guard let self = self else {return}
                 self.groups = ret
                  loader?.finish(key: k1)
+                 self.isComputingCluster = false
             }
         }
     }

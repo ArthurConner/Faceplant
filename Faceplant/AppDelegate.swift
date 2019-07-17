@@ -49,7 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if loader.groups.isEmpty {
                     loader.makeClusters()
                 }
-                //cv.obj.item.loader = nil
+               cv.obj.item.loader = nil
             }
         }
         window.contentView = NSHostingView(rootView: cv)
