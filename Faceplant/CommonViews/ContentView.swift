@@ -2,7 +2,7 @@ import SwiftUI
 
 
 extension ACFileStatus {
-    func background(rad:CGFloat)-> _ModifiedContent<Color, _ClipEffect<RoundedRectangle>>{
+    func background(rad:CGFloat)-> some View{
         if isKeeper {
             return Color.blue.cornerRadius(rad)
         } else {

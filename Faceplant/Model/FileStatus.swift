@@ -94,7 +94,7 @@ class ACFileStatus : Codable{
         //case faces
     }
     
-    let didChange = PassthroughSubject<ACFileStatus, Never>()
+    let willChange = PassthroughSubject<ACFileStatus, Never>()
     
     init?(path:String,isImage:Bool){
         guard let (s,i) = FileInfo.make(path: path, isImage: isImage) else { return nil}
@@ -106,12 +106,12 @@ class ACFileStatus : Codable{
     func updateMe(){
         DispatchQueue.main.async {[weak self] in
             guard let self = self else { return }
-            self.didChange.send(self)
+            self.willChange.send(self)
         }
     }
     
     var isKeeper = false{
-        didSet {
+        willSet {
             updateMe()
         }
     }
