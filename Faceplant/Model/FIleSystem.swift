@@ -277,13 +277,14 @@ class FileLoader  : BindableObject, Codable {
     }
 }
 
+fileprivate let clusterQue = DispatchQueue(label: "ClusterQueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
 extension FileLoader {
     func makeClusters(){
         
         self.isComputingCluster = true
         
-        DispatchQueue.global(qos: .background).async { [weak loader, weak self] in
+        clusterQue.async { [weak loader, weak self] in
             
             guard let self = self else { return }
             
