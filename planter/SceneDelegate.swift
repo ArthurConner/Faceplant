@@ -74,7 +74,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     cv.obj.item = loader.exclude(other: other)
                     cv.obj.item.loader = cv.obj.monitor
                     cv.obj.item.makeClusters()
-                    cv.obj.item.loader = nil
+                    //cv.obj.item.loader = nil
                 }
                 
                 

@@ -69,17 +69,17 @@ class ProgressMonitor : BindableObject {
     }
     
     private var keeper:[String:Progress] = [:]{
-        didSet {
+        willSet {
             updateMe()
         }
     }
     
-    let didChange = PassthroughSubject<ProgressMonitor, Never>()
+    let willChange = PassthroughSubject<ProgressMonitor, Never>()
  
     
     private func updateMe(){
         DispatchQueue.main.async {
-            self.didChange.send(self)
+            self.willChange.send(self)
         }
     }
 
@@ -115,7 +115,7 @@ class LoudProgress : ProgressMonitor {
 
 class ProgessWatcher<A:BindableObject>: BindableObject {
     var item:A{
-        didSet {
+        willSet {
             updateMe()
             self.changelistners(item:item )
         }
@@ -125,11 +125,11 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
     
     private func updateMe(){
         DispatchQueue.main.async {
-            self.didChange.send((item:self.item,monitor:self.monitor))
+            self.willChange.send((item:self.item,monitor:self.monitor))
         }
     }
     
-    let didChange = PassthroughSubject<(A,ProgressMonitor),Never>()
+    let willChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
     private var mypub: Subscribers.Sink<(ProgressMonitor, A.PublisherType.Output), Never>? = nil
  
@@ -138,7 +138,7 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
             m.cancel()
         }
         
-        mypub = Publishers.CombineLatest(self.monitor.didChange,i.didChange)
+        mypub = Publishers.CombineLatest(self.monitor.willChange,i.willChange)
             .sink{[weak self] (x) in
                 if let s = self {
                     s.updateMe()

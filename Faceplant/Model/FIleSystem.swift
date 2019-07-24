@@ -33,7 +33,7 @@ class FileLoader  : BindableObject, Codable {
     let files:[ACFileStatus]
     var source:String
     var name:String = "Status.json"
-    let didChange = PassthroughSubject<FileLoader, Never>()
+    let willChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
     
     enum CodingKeys: String, CodingKey {
@@ -45,7 +45,7 @@ class FileLoader  : BindableObject, Codable {
     }
     
     var isComputingCluster = false{
-        didSet {
+        willSet {
             updateMe()
         }
     }
@@ -70,8 +70,8 @@ class FileLoader  : BindableObject, Codable {
     
     func updateMe(){
         DispatchQueue.main.async {[weak self] in
-            guard let self = self else { return }
-            self.didChange.send(self)
+            guard let s = self else { return }
+            s.willChange.send(s)
         }
     }
     
@@ -82,7 +82,7 @@ class FileLoader  : BindableObject, Codable {
     }
     
     var theshold:Float = 10.0  {
-        didSet {
+        willSet {
             if !isComputingCluster {
                 let _  = updateClusters.receive(true)
             }
@@ -90,7 +90,7 @@ class FileLoader  : BindableObject, Codable {
     }
     
     var selectIndex:Int = -1  {
-        didSet {
+        willSet {
             updateMe()
             
         }
@@ -289,7 +289,7 @@ extension FileLoader {
             
             guard !self.files.isEmpty else { return }
             let k1 = "cluster \(self.source)"
-            loader?.add(key: k1, name: "clustering", total: self.files.count + 1)
+            loader?.add(key: k1, name: "clustering", total: self.files.count)
             let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
             
             var ret:[ACFileGroup] = []
@@ -312,7 +312,7 @@ extension FileLoader {
                     do {
                         var distance = Float(0)
                         try goodExample.features!.computeDistance(&distance, to: check.features!)
-                        print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+                       // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
                         if distance < self.theshold {
                             current.append(check)
                         } else {
@@ -335,8 +335,9 @@ extension FileLoader {
             DispatchQueue.main.async {[weak self] in
                 guard let self = self else {return}
                 self.groups = ret
-                loader?.finish(key: k1)
                 self.isComputingCluster = false
+                loader?.finish(key: k1)
+                
             }
         }
     }
