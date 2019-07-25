@@ -70,8 +70,8 @@ class FileLoader  : BindableObject, Codable {
     
     func updateMe(){
         DispatchQueue.main.async {[weak self] in
-            guard let self = self else { return }
-            self.willChange.send(self)
+            guard let s = self else { return }
+            s.willChange.send(s)
         }
     }
     
@@ -277,19 +277,20 @@ class FileLoader  : BindableObject, Codable {
     }
 }
 
+fileprivate let clusterQue = DispatchQueue(label: "ClusterQueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
 extension FileLoader {
     func makeClusters(){
         
         self.isComputingCluster = true
         
-        DispatchQueue.global(qos: .background).async { [weak loader, weak self] in
+        clusterQue.async { [weak loader, weak self] in
             
             guard let self = self else { return }
             
             guard !self.files.isEmpty else { return }
             let k1 = "cluster \(self.source)"
-            loader?.add(key: k1, name: "clustering", total: self.files.count + 1)
+            loader?.add(key: k1, name: "clustering", total: self.files.count)
             let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
             
             var ret:[ACFileGroup] = []
@@ -312,7 +313,7 @@ extension FileLoader {
                     do {
                         var distance = Float(0)
                         try goodExample.features!.computeDistance(&distance, to: check.features!)
-                        print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+                       // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
                         if distance < self.theshold {
                             current.append(check)
                         } else {
@@ -335,8 +336,9 @@ extension FileLoader {
             DispatchQueue.main.async {[weak self] in
                 guard let self = self else {return}
                 self.groups = ret
-                loader?.finish(key: k1)
                 self.isComputingCluster = false
+                loader?.finish(key: k1)
+                
             }
         }
     }

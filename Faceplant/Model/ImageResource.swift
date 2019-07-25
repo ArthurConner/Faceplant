@@ -19,21 +19,17 @@ typealias OSImage = UIImage
 fileprivate  let imagequeue = DispatchQueue(label: "thumbnailqueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
 class ImageFileResource: BindableObject {
-    
-    
-   //typealias PublisherType =
-    
-   var willChange: AnyPublisher<(), Never>  //= PassthroughSubject<OSImage?, Never>() //Publishers.Sequence<OSImage, Never>(sequence: [])
+    let willChange = PassthroughSubject<OSImage, Never>()
     private let subject = PassthroughSubject<(), Never>()
     let url:String
     let maxDim:CGFloat
+    var firstLoad = true
     
-    private var firstLoad = true
     
     var image = OSImage(named: "empty.jpeg")! {
         willSet {
             DispatchQueue.main.async {
-                self.subject.send()
+                self.willChange.send(newValue)
             }
         }
     }
@@ -41,9 +37,12 @@ class ImageFileResource: BindableObject {
     init(url: String,maxDim: CGFloat) {
         self.url = url
         self.maxDim = maxDim
-       self.willChange = subject.handleEvents(receiveSubscription: { [weak self] sub in
+        
+        let _  =  willChange.handleEvents(receiveSubscription: { [weak self] sub in
             guard let s = self, s.firstLoad else { return }
             s.reload()
+            
+            
         }).eraseToAnyPublisher()
        
     }

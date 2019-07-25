@@ -71,7 +71,7 @@ class ProgressMonitor : BindableObject {
     }
     
     private var keeper:[String:Progress] = [:]{
-        didSet {
+        willSet {
             updateMe()
         }
     }
@@ -117,7 +117,7 @@ class LoudProgress : ProgressMonitor {
 
 class ProgessWatcher<A:BindableObject>: BindableObject {
     var item:A{
-        didSet {
+        willSet {
             updateMe()
             self.changelistners(item:item )
         }

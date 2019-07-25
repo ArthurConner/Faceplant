@@ -72,9 +72,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 monitor.finish(key: k1)
                 DispatchQueue.main.async {
                     cv.obj.item = loader.exclude(other: other)
+                   
                     cv.obj.item.loader = cv.obj.monitor
+                    cv.obj.item.name = "excludeMer.JSON"
                     cv.obj.item.makeClusters()
-                    cv.obj.item.loader = nil
+                    //cv.obj.item.loader = nil
                 }
                 
                 

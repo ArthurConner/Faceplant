@@ -75,7 +75,7 @@ class ACFileStatus : Codable{
     let info: FileInfo
     
     var key:String{
-        didSet {
+        willSet {
             updateMe()
         }
     }
