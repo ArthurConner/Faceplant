@@ -57,7 +57,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             nl.makeClusters()
            */
             let mymont = ProgessWatcher(item: blankLoader)
-            let cv = ContentView(obj: mymont)
+            var cv = ContentView(obj: mymont,fLoader: mymont.item)
             let monitor = mymont.monitor
             window.rootViewController = UIHostingController(rootView:cv )
             let k1 = "adding files"
@@ -73,9 +73,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 DispatchQueue.main.async {
                     cv.obj.item = loader.exclude(other: other)
                    
+                    cv.fLoader =  cv.obj.item
                     cv.obj.item.loader = cv.obj.monitor
                     cv.obj.item.name = "excludeMer.JSON"
                     cv.obj.item.makeClusters()
+                    
                     //cv.obj.item.loader = nil
                 }
                 

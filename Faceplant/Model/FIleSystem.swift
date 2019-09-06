@@ -26,7 +26,7 @@ extension ACFileGroup : Identifiable{
     }
 }
 
-class FileLoader  : BindableObject, Codable {
+class FileLoader  : ObservableObject, Codable {
     
     static let empty = FileLoader(path: "", existing: [])
     
@@ -76,7 +76,7 @@ class FileLoader  : BindableObject, Codable {
     }
     
     var groups: [ACFileGroup] = [] {
-        willSet {
+        didSet {
             updateMe()
         }
     }
@@ -84,7 +84,7 @@ class FileLoader  : BindableObject, Codable {
     var theshold:Float = 10.0  {
         willSet {
             if !isComputingCluster {
-                let _  = updateClusters.receive(true)
+                let _  = updateClusters.
             }
         }
     }
@@ -332,7 +332,7 @@ extension FileLoader {
             }
             
             ret.append(ACFileGroup(current))
-            print("we have \(ret.count) groups for \(self.theshold)")
+            print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
             DispatchQueue.main.async {[weak self] in
                 guard let self = self else {return}
                 self.groups = ret

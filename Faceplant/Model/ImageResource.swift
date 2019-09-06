@@ -18,7 +18,7 @@ typealias OSImage = UIImage
 
 fileprivate  let imagequeue = DispatchQueue(label: "thumbnailqueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
-class ImageFileResource: BindableObject {
+class ImageFileResource: ObservableObject {
     let willChange = PassthroughSubject<OSImage, Never>()
     private let subject = PassthroughSubject<(), Never>()
     let url:String

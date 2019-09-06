@@ -17,9 +17,9 @@ extension ACFileStatus {
 
 struct DetailView : View {
     
-    @ObjectBinding var loader:FileLoader
-    @ObjectBinding var info:ACFileStatus
-    @ObjectBinding var im:ImageFileResource
+    @ObservedObject var loader:FileLoader
+    @ObservedObject var info:ACFileStatus
+    @ObservedObject var im:ImageFileResource
     
     let radius:CGFloat
     
@@ -40,7 +40,7 @@ struct DetailView : View {
 struct GroupView : View {
     
     var group:ACFileGroup
-    @ObjectBinding var loader:FileLoader
+    @ObservedObject var loader:FileLoader
     
     var body: some View {
         
@@ -50,7 +50,7 @@ struct GroupView : View {
                 //.filter({$0.image != nil})
                 ForEach(group.members){ x in
                     ThumbnailView(info: x,im: x.image,radius:3)
-                        .tapAction {
+                        .onTapGesture {
                             if let i = self.loader.indexOf(key:x.key){
                                 self.loader.selectIndex = i
                                 self.loader.save()
@@ -67,58 +67,60 @@ struct GroupView : View {
 
 struct ContentView : View {
     
-    @ObjectBinding var obj:ProgessWatcher<FileLoader>
+    @ObservedObject var obj:ProgessWatcher<FileLoader>
+    @ObservedObject var fLoader:FileLoader
     
     var body: some View {
         
-        let myGroups = obj.item
-        let details = obj.monitor.details
+       // let myGroups = obj.item
+       // let details = obj.monitor.details
         
         return Group{
             
-            if !details.isEmpty{
+            if !obj.monitor.details.isEmpty{
                 VStack{
-                    Text("Loading")
+                    Text("Loading \(fLoader.name)")
                     ProgressGroupView(monitor: obj.monitor)
                     Button(action: {
-                                                    myGroups.makeClusters()
-                                                }){
-                                                    Text("Make Groups")
-                                                }
+                        self.obj.item.makeClusters()
+                    }){
+                        Text("Make Groups  \(fLoader.name)")
+                    }
                     
                 }
             } else {
                 VStack{
-                    Text("Done loading")
+                    Text("Done loading  \(fLoader.name)")
                     
                     HStack{
-                        if myGroups.isComputingCluster {
+                        if obj.item.isComputingCluster {
                             Circle().frame(width: 10, height: 10, alignment: .center).foregroundColor(.red)
                         } else {
                             Circle().frame(width: 10, height: 10, alignment: .center).foregroundColor(.green)
                         }
                         Group{
-                        if (myGroups.groups.isEmpty){
-                            Button(action: {
-                                myGroups.makeClusters()
-                            }){
-                                Text("Make Groups")
+                            if (obj.item.groups.isEmpty){
+                                Button(action: {
+                                    self.fLoader.makeClusters()
+                                }){
+                                    Text("Make Groups \(fLoader.name)")
+                                }
+                            } else {
+                                Slider(value: $obj.item.theshold, in: ClosedRange(1...40.0), step: 0.5)
+                                //Slider(value:$obj.item.theshold, from: 1, through: 40, by: 0.5)
                             }
-                        } else {
-                            Slider(value:$obj.item.theshold, from: 1, through: 40, by: 0.5)
-                        }
                         }
                     }
                     
-                    if (!myGroups.groups.isEmpty){
+                    if (!fLoader.groups.isEmpty){
                         
-                        DetailView(loader: myGroups,
-                                   info: myGroups.files[max(0,myGroups.selectIndex)],
+                        DetailView(loader: obj.item,
+                                   info: obj.item.files[max(0,fLoader.selectIndex)],
                                    im: ImageFileResource(
-                                    url: myGroups.files[max(0,myGroups.selectIndex)].info.path, maxDim: ImageFileResource.largeSize),
+                                    url: obj.item.files[max(0,fLoader.selectIndex)].info.path, maxDim: ImageFileResource.largeSize),
                                    radius:10)
-                        List(myGroups.groups) { landmark in
-                            GroupView(group: landmark, loader: myGroups).frame(height:ImageFileResource.thumbSize.height + 10)
+                        List(obj.item.groups) { landmark in
+                            GroupView(group: landmark, loader: self.fLoader).frame(height:ImageFileResource.thumbSize.height + 10)
                             
                         }
                             
@@ -126,11 +128,11 @@ struct ContentView : View {
                         
                     } else {
                         Text("Just have files and no groups")
-                        List(myGroups.files) { landmark in
+                        List(obj.item.files) { landmark in
                             HStack{
                                 DetailView(loader: self.obj.item, info: landmark, im: landmark.image, radius: 3)
                                 Text(landmark.key)
-                        Text(landmark.key)
+                                Text(landmark.key)
                             }
                         }
                         .background(Color.orange)
@@ -148,7 +150,7 @@ struct ContentView : View {
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
         let foo = ProgessWatcher(item: FileLoader.empty)
-        return ContentView(obj: foo)
+        return ContentView(obj: foo,fLoader:foo.item)
     }
 }
 #endif

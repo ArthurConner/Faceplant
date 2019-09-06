@@ -10,7 +10,7 @@ import Foundation
 import Combine
 import SwiftUI
 
-class ProgressMonitor : BindableObject {
+class ProgressMonitor : ObservableObject {
    
     
     
@@ -115,7 +115,7 @@ class LoudProgress : ProgressMonitor {
     }
 }
 
-class ProgessWatcher<A:BindableObject>: BindableObject {
+class ProgessWatcher<A:ObservableObject>: ObservableObject {
     var item:A{
         willSet {
             updateMe()
@@ -133,14 +133,14 @@ class ProgessWatcher<A:BindableObject>: BindableObject {
     
     let willChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
-    private var mypub: Subscribers.Sink<(ProgressMonitor, A.PublisherType.Output), Never>? = nil
+    private var mypub: AnyCancellable? = nil
  
     private func changelistners(item i:A){
         if let m = mypub {
             m.cancel()
         }
         
-        mypub = Publishers.CombineLatest(self.monitor.willChange,i.willChange)
+       mypub = Publishers.CombineLatest(self.monitor.willChange,i.objectWillChange)
             .sink{[weak self] (x) in
                 if let s = self {
                     s.updateMe()

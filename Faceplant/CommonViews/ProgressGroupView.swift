@@ -9,11 +9,11 @@
 import SwiftUI
 
 struct ProgressGroupView : View {
-    @ObjectBinding var monitor:ProgressMonitor
+    @ObservedObject var monitor:ProgressMonitor
     var body: some View {
         
         VStack{
-            ForEach( monitor.details.identified(by: \.name)) { x in
+            ForEach( monitor.details, id: \.name) { x in
                 Text("\(x.name):\t [\(x.distance) out of \(x.total)]")
             }
         }

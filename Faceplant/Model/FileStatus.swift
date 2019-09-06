@@ -215,6 +215,6 @@ extension ACFileStatus : Identifiable{
     
 }
 
-extension ACFileStatus : BindableObject {
+extension ACFileStatus : ObservableObject {
     
 }
