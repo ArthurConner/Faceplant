@@ -25,7 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.setFrameAutosaveName("Main Window")
         
         let mymont = ProgessWatcher(item: FileLoader.empty)
-        let cv = ContentView(obj: mymont)
+        let cv = ContentView(obj: mymont, fLoader:FileLoader.empty)
         let monitor = mymont.monitor
         
         let k1 = "adding files"

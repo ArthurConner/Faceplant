@@ -26,14 +26,14 @@ extension ACFileGroup : Identifiable{
     }
 }
 
-class FileLoader  : ObservableObject, Codable {
+class FileLoader  :  Combine.ObservableObject, Codable {
     
     static let empty = FileLoader(path: "", existing: [])
     
     let files:[ACFileStatus]
     var source:String
     var name:String = "Status.json"
-    let willChange = PassthroughSubject<FileLoader, Never>()
+    let objectWillChange = PassthroughSubject<FileLoader, Never>()
     weak var loader:ProgressMonitor? = nil
     
     enum CodingKeys: String, CodingKey {
@@ -50,28 +50,14 @@ class FileLoader  : ObservableObject, Codable {
         }
     }
     
-    lazy var updateClusters = {
-        
-        return PassthroughSubject<Bool, Never>()
-            /*
-             .debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
-             .drop(while:{[weak self] x in
-             guard let self = self else {return false}
-             print(self.isComputingCluster)
-             return self.isComputingCluster})
-             */
-            .sink{[weak self] x in
-                guard let self = self else {return}
-                
-                self.makeClusters()
-                
-        }
-    }()
+    var updateSubject = PassthroughSubject<Bool, Never>()
+    
+    var updateClusters:AnyCancellable?
     
     func updateMe(){
         DispatchQueue.main.async {[weak self] in
             guard let s = self else { return }
-            s.willChange.send(s)
+            s.objectWillChange.send(s)
         }
     }
     
@@ -83,9 +69,9 @@ class FileLoader  : ObservableObject, Codable {
     
     var theshold:Float = 10.0  {
         willSet {
-            if !isComputingCluster {
-                let _  = updateClusters.
-            }
+           
+            updateSubject.send(isComputingCluster)
+            
         }
     }
     
@@ -168,6 +154,16 @@ class FileLoader  : ObservableObject, Codable {
                 self.groups = o.groups
             }
         }
+        
+        updateClusters = updateSubject.debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
+            .drop(while:{$0})
+     
+        .sink{[weak self] x in
+                guard let self = self else {return}
+                self.makeClusters()
+                
+        }
+        
     }
     
     private convenience init(path:String,

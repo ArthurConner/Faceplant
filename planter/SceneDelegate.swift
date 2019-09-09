@@ -61,7 +61,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let monitor = mymont.monitor
             window.rootViewController = UIHostingController(rootView:cv )
             let k1 = "adding files"
-            monitor.add(key: k1, name: k1,total:3)
+            monitor.add(key: k1, name: k1,total:2)
             DispatchQueue.global(qos: .userInitiated).async {
                 let other = FileLoader(flat: "/Users/arthurconner/Downloads/Mertreat imported", kinds: [".JPG"], isImage: true,loader: monitor)
                 monitor.update(key: k1, amount: 1)

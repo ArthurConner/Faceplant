@@ -71,7 +71,7 @@ struct PeopleBounds : Codable{
     let bounds:CGRect
 }
 
-class ACFileStatus : Codable{
+class ACFileStatus : Codable, Combine.ObservableObject{
     let info: FileInfo
     
     var key:String{
@@ -94,7 +94,7 @@ class ACFileStatus : Codable{
         //case faces
     }
     
-    let willChange = PassthroughSubject<ACFileStatus, Never>()
+    let objectWillChange = PassthroughSubject<ACFileStatus, Never>()
     
     init?(path:String,isImage:Bool){
         guard let (s,i) = FileInfo.make(path: path, isImage: isImage) else { return nil}
@@ -106,7 +106,7 @@ class ACFileStatus : Codable{
     func updateMe(){
         DispatchQueue.main.async {[weak self] in
             guard let self = self else { return }
-            self.willChange.send(self)
+            self.objectWillChange.send(self)
         }
     }
     
@@ -215,6 +215,4 @@ extension ACFileStatus : Identifiable{
     
 }
 
-extension ACFileStatus : ObservableObject {
-    
-}
+

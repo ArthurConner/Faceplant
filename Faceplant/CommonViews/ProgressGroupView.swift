@@ -13,6 +13,11 @@ struct ProgressGroupView : View {
     var body: some View {
         
         VStack{
+            if monitor.isDone {
+                Text("is Done")
+            } else {
+                Text("is Pending")
+            }
             ForEach( monitor.details, id: \.name) { x in
                 Text("\(x.name):\t [\(x.distance) out of \(x.total)]")
             }

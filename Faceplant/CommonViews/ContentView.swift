@@ -72,6 +72,28 @@ struct ContentView : View {
     
     var body: some View {
         
+        VStack{
+                    Text("Loading \(fLoader.name)")
+            Group {
+                if obj.monitor.isDone {
+                    Text("yay with loading")
+                } else {
+                    ProgressGroupView(monitor: obj.monitor)
+                }
+            }
+                    
+                    Button(action: {
+                        self.obj.item.makeClusters()
+                    }){
+                        Text("Make Groups  \(fLoader.name)")
+                    }
+                    
+                }
+    }
+    
+    /*
+    var body: some View {
+        
        // let myGroups = obj.item
        // let details = obj.monitor.details
         
@@ -106,8 +128,7 @@ struct ContentView : View {
                                     Text("Make Groups \(fLoader.name)")
                                 }
                             } else {
-                                Slider(value: $obj.item.theshold, in: ClosedRange(1...40.0), step: 0.5)
-                                //Slider(value:$obj.item.theshold, from: 1, through: 40, by: 0.5)
+                                Slider(value: $obj.item.theshold, in: 1...40)
                             }
                         }
                     }
@@ -142,7 +163,7 @@ struct ContentView : View {
             }
         }.padding().frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+    */
 }
 
 
