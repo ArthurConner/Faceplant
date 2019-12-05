@@ -39,33 +39,20 @@ class FileLoader  :  Combine.ObservableObject, Codable {
     enum CodingKeys: String, CodingKey {
         case files
         case theshold
-        case selectIndex
+       // case selectIndex
         case source
-        case groups
+       // case groups
     }
     
-    var isComputingCluster = false{
-        willSet {
-            updateMe()
-        }
-    }
+   @Published var isComputingCluster = false
     
     var updateSubject = PassthroughSubject<Bool, Never>()
     
     var updateClusters:AnyCancellable?
     
-    func updateMe(){
-        DispatchQueue.main.async {[weak self] in
-            guard let s = self else { return }
-            s.objectWillChange.send(s)
-        }
-    }
+
     
-    var groups: [ACFileGroup] = [] {
-        didSet {
-            updateMe()
-        }
-    }
+   @Published var groups: [ACFileGroup] = []
     
     var theshold:Float = 10.0  {
         willSet {
@@ -75,12 +62,8 @@ class FileLoader  :  Combine.ObservableObject, Codable {
         }
     }
     
-    var selectIndex:Int = -1  {
-        willSet {
-            updateMe()
-            
-        }
-    }
+   @Published var selectIndex:Int = -1
+    
     
     static func contentsOf(_ path:String, kinds:[String], isImage:Bool = true)->[String]{
         

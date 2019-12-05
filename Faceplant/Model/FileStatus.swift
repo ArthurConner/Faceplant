@@ -74,11 +74,8 @@ struct PeopleBounds : Codable{
 class ACFileStatus : Codable, Combine.ObservableObject{
     let info: FileInfo
     
-    var key:String{
-        willSet {
-            updateMe()
-        }
-    }
+    @Published var key:String
+    
     var categories: [String: Float] = [:]
     var terms: [String: Float] = [:]
     var people:[PeopleBounds] = []
@@ -103,18 +100,9 @@ class ACFileStatus : Codable, Combine.ObservableObject{
         // print("making item")
     }
     
-    func updateMe(){
-        DispatchQueue.main.async {[weak self] in
-            guard let self = self else { return }
-            self.objectWillChange.send(self)
-        }
-    }
+
     
-    var isKeeper = false{
-        willSet {
-            updateMe()
-        }
-    }
+   @Published var isKeeper = false
     
     func dest(root:String)->String{
         
@@ -213,6 +201,19 @@ extension ACFileStatus : Identifiable{
         
     }
     
+/*
+    convenience init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.info = try values.decode(FileInfo.self, forKey: .info)
+        isKeeper = try values.decode(Bool.self, forKey: .isKeeper)
+        categories = try values.decode([String: Float].self, forKey: .categories)
+        key = try values.decode(String.self, forKey: .key)
+        people = try values.decode([PeopleBounds].self, forKey: .people)
+        terms = try values.decode([String: Float].self, forKey: .terms)
+        
+        
+    }
+ */
 }
 
 

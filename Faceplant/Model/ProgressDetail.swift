@@ -130,27 +130,45 @@ class ProgessWatcher<A:ObservableObject>: ObservableObject {
     
     private func updateMe(){
         DispatchQueue.main.async {
+            print("Sending that our item has changed")
             self.objectWillChange.send((item:self.item,monitor:self.monitor))
         }
     }
     
     let objectWillChange = PassthroughSubject<(A,ProgressMonitor),Never>()
     
-    private var mypub: AnyCancellable? = nil
+    private var mypub1: AnyCancellable? = nil
+    private var mypub2: AnyCancellable? = nil
     
     private func changelistners(item i:A){
-        if let m = mypub {
+        if let m = mypub1 {
             m.cancel()
         }
+  
+        if let m = mypub2 {
+                   m.cancel()
+        }
         
-        mypub = Publishers.CombineLatest(self.monitor.objectWillChange,i.objectWillChange)
-            .sink{[weak self] (x) in
+        mypub1 = i.objectWillChange.sink(receiveValue: {[weak self] (x) in
+            
+            print("going to update progress because of item change")
+            if let s = self {
+                s.updateMe()
+            }
+            
+        })
+            
+        
+        mypub2 = self.monitor.objectWillChange.sink(receiveValue: {[weak self] (x) in
                 
-                print("going to update progress")
+                print("going to update progress because of monitor change")
                 if let s = self {
                     s.updateMe()
                 }
-        }
+                
+            })
+        
+   
     }
     
     init(item i:A){
