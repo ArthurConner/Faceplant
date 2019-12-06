@@ -22,12 +22,15 @@ class FileLoaderModel  :   ObservableObject {
      
     var monitor = LoudProgress()
     
-    var isComputingCluster = false
+    var isComputingCluster:Float = 0.0
     
     private var subscriptions = Set<AnyCancellable>()
     
     func computeClusters(){
         guard let m = self.model else {return}
+        guard  isComputingCluster > 0 else {return}
+        isComputingCluster = -m.theshold - 1
+        let target = m.theshold
         
         FileLoaderModelQue.async {
             [weak self] in
@@ -35,8 +38,10 @@ class FileLoaderModel  :   ObservableObject {
             DispatchQueue.main.async {
                 [weak self ] in
                 if let m = self?.model{
+                    self?.isComputingCluster = target
                     m.matchPhotos = c
                     self?.model = m
+                    
                 }
             }
         }
