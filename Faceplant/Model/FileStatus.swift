@@ -65,16 +65,20 @@ struct FileInfo : Codable {
     }
 }
 
+extension FileInfo: Hashable {
+    
+}
+
 
 struct PeopleBounds : Codable{
     let name:String
     let bounds:CGRect
 }
 
-class ACFileStatus : Codable, Combine.ObservableObject{
+class ACFileStatus : Codable {
     let info: FileInfo
     
-    @Published var key:String
+     var key:String = ""
     
     var categories: [String: Float] = [:]
     var terms: [String: Float] = [:]
@@ -102,7 +106,7 @@ class ACFileStatus : Codable, Combine.ObservableObject{
     
 
     
-   @Published var isKeeper = false
+    var isKeeper = false
     
     func dest(root:String)->String{
         
@@ -158,7 +162,7 @@ extension ACFileStatus : Identifiable{
         return false
     }
     
-    func analyse(){
+    func analyze(){
         
         let url = URL(fileURLWithPath: info.path)
         

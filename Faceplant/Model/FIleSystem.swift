@@ -14,8 +14,9 @@ import Vision
 
 
 class ACFileGroup : Codable {
-    let members:[ACFileStatus]
-    init(_ m: [ACFileStatus]) {
+    let members:[FileInfo]
+    var selectedID = -1
+    init(_ m: [FileInfo]) {
         members = m
     }
 }
@@ -26,43 +27,44 @@ extension ACFileGroup : Identifiable{
     }
 }
 
-class FileLoader  :  Combine.ObservableObject, Codable {
+class FileLoader  :   Codable {
     
     static let empty = FileLoader(path: "", existing: [])
     
-    let files:[ACFileStatus]
+    let files:[FileInfo:ACFileStatus]
     var source:String
     var name:String = "Status.json"
     let objectWillChange = PassthroughSubject<FileLoader, Never>()
-    weak var loader:ProgressMonitor? = nil
+    
+    var matchPhotos: [ACFileGroup]? = []
+    
+   
     
     enum CodingKeys: String, CodingKey {
+        case matchPhotos
         case files
         case theshold
-       // case selectIndex
         case source
-       // case groups
+        
     }
     
-   @Published var isComputingCluster = false
+     weak var loader:ProgressMonitor? = nil
     
-    var updateSubject = PassthroughSubject<Bool, Never>()
-    
-    var updateClusters:AnyCancellable?
+    var isComputingCluster = false
+   // var updateSubject = PassthroughSubject<Bool, Never>()
+   // var updateClusters:AnyCancellable?
     
 
     
-   @Published var groups: [ACFileGroup] = []
-    
     var theshold:Float = 10.0  {
         willSet {
-           
-            updateSubject.send(isComputingCluster)
+            
+          //  updateSubject.send(isComputingCluster)
             
         }
     }
     
-   @Published var selectIndex:Int = -1
+    @Published var selectIndex:Int = -1
     
     
     static func contentsOf(_ path:String, kinds:[String], isImage:Bool = true)->[String]{
@@ -129,23 +131,29 @@ class FileLoader  :  Combine.ObservableObject, Codable {
     
     private init(path:String, existing f:[ ACFileStatus],  otherLoader:FileLoader? = nil){
         source = path
-        files = f.sorted{$0.info.key < $1.info.key}
+        files = f.sorted{$0.info.key < $1.info.key}.reduce([FileInfo:ACFileStatus](), { k,v in
+            var next = k
+            next[v.info] = v
+            return next
+        })
         if let o = otherLoader {
             selectIndex = o.selectIndex
             theshold = o.theshold
             if f.count == o.files.count {
-                self.groups = o.groups
+                self.matchPhotos = o.matchPhotos
             }
         }
         
+        /*
         updateClusters = updateSubject.debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
             .drop(while:{$0})
-     
-        .sink{[weak self] x in
+            
+            .sink{[weak self] x in
                 guard let self = self else {return}
                 self.makeClusters()
                 
         }
+ */
         
     }
     
@@ -161,7 +169,12 @@ class FileLoader  :  Combine.ObservableObject, Codable {
         let unknowns:[String]
         if let data = try? Data(contentsOf: savePath, options: .mappedIfSafe),
             let main  = try? decoder.decode(FileLoader.self,from: data) {
-            statusArray =  main.files.filter{paths.contains($0.info.path)}
+            for (k, v) in main.files {
+                if paths.contains(k.path){
+                    statusArray.append(v)
+                }
+            }
+            
             let excludePaths = Set<String>(statusArray.map({return $0.info.path}))
             unknowns = paths.filter({return !excludePaths.contains($0)})
             other = main
@@ -186,7 +199,7 @@ class FileLoader  :  Combine.ObservableObject, Codable {
             
             loader?.finish(key: k1)
             for y in details{
-                y.analyse()
+                y.analyze()
                 loader?.update(key: k2, amount: 1)
             }
             loader?.finish(key: k2)
@@ -224,29 +237,37 @@ class FileLoader  :  Combine.ObservableObject, Codable {
         }
     }
     
+    private func allFiles()->[ACFileStatus]{
+        return Array(self.files.values).sorted(by: {$0.info.path < $1.info.path})
+    }
+    
     func exclude(other:FileLoader)->FileLoader{
-        let exclude = Set<String>(other.files.map({return $0.info.key}))
-        let nextFiles = files.filter({!exclude.contains($0.info.key)})
+        
+        let exclude = Set<String>(other.allFiles().map({return $0.info.key}))
+        let nextFiles = allFiles().filter({!exclude.contains($0.info.key)})
         return FileLoader(path: self.source, existing: nextFiles)
     }
     
     func search(term:String)->FileLoader{
-        let nextFiles = files.filter({$0.matches(term)})
+        let nextFiles = allFiles().filter({$0.matches(term)})
         return FileLoader(path: self.source, existing: nextFiles)
     }
     
+    /*
     func indexOf(key:String)->Int?{
         var lowerIndex = 0;
         var upperIndex = files.count - 1
         
+        let search = allFiles().sorted(by: { $0.key < $1.key})
+        
         while (true) {
             let currentIndex = (lowerIndex + upperIndex)/2
-            if(files[currentIndex].key == key) {
+            if(search[currentIndex].key == key) {
                 return currentIndex
             } else if (lowerIndex > upperIndex) {
                 return nil
             } else {
-                if (files[currentIndex].key > key) {
+                if (search[currentIndex].key > key) {
                     upperIndex = currentIndex - 1
                 } else {
                     lowerIndex = currentIndex + 1
@@ -254,23 +275,20 @@ class FileLoader  :  Combine.ObservableObject, Codable {
             }
         }
     }
+ */
 }
 
 fileprivate let clusterQue = DispatchQueue(label: "ClusterQueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
 extension FileLoader {
-    func makeClusters(){
+    func makeClusters()->[ACFileGroup]{
         
-        self.isComputingCluster = true
         
-        clusterQue.async { [weak loader, weak self] in
             
-            guard let self = self else { return }
-            
-            guard !self.files.isEmpty else { return }
+            guard !self.files.isEmpty else { return [] }
             let k1 = "cluster \(self.source)"
             loader?.add(key: k1, name: "clustering", total: self.files.count)
-            let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
+            let f =  self.allFiles()
             
             var ret:[ACFileGroup] = []
             for v in f {
@@ -279,7 +297,7 @@ extension FileLoader {
             }
             let unknown = f.filter{ $0.features == nil }
             if !unknown.isEmpty {
-                ret.append(ACFileGroup(unknown))
+                ret.append(ACFileGroup(unknown.map{return $0.info}))
             }
             
             let known = f.filter{ $0.features != nil }
@@ -292,16 +310,16 @@ extension FileLoader {
                     do {
                         var distance = Float(0)
                         try goodExample.features!.computeDistance(&distance, to: check.features!)
-                       // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+                        // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
                         if distance < self.theshold {
                             current.append(check)
                         } else {
-                            ret.append(ACFileGroup(current))
+                            ret.append(ACFileGroup(current.map{return $0.info}))
                             current = [check]
                         }
                         
                     } catch {
-                        ret.append(ACFileGroup(current))
+                        ret.append(ACFileGroup(current.map{return $0.info}))
                         current = [check]
                     }
                     
@@ -310,15 +328,76 @@ extension FileLoader {
                 }
             }
             
-            ret.append(ACFileGroup(current))
+            ret.append(ACFileGroup(current.map{return $0.info}))
+        
             print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
-            DispatchQueue.main.async {[weak self] in
-                guard let self = self else {return}
-                self.groups = ret
-                self.isComputingCluster = false
-                loader?.finish(key: k1)
-                
-            }
-        }
+        return ret
+        
+        
     }
+    
+    /*
+    func makeClustersOld(){
+           
+           self.isComputingCluster = true
+           
+           clusterQue.async { [weak loader, weak self] in
+               
+               guard let self = self else { return }
+               
+               guard !self.files.isEmpty else { return }
+               let k1 = "cluster \(self.source)"
+               loader?.add(key: k1, name: "clustering", total: self.files.count)
+               let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
+               
+               var ret:[ACFileGroup] = []
+               for v in f {
+                   _ = v.features
+                   loader?.update(key: k1, amount: 1)
+               }
+               let unknown = f.filter{ $0.features == nil }
+               if !unknown.isEmpty {
+                   ret.append(ACFileGroup(unknown))
+               }
+               
+               let known = f.filter{ $0.features != nil }
+               var i = 0
+               var current:[ACFileStatus] = []
+               while (i < known.count) {
+                   let check = known[i]
+                   i += 1
+                   if let goodExample = current.last{
+                       do {
+                           var distance = Float(0)
+                           try goodExample.features!.computeDistance(&distance, to: check.features!)
+                           // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+                           if distance < self.theshold {
+                               current.append(check)
+                           } else {
+                               ret.append(ACFileGroup(current))
+                               current = [check]
+                           }
+                           
+                       } catch {
+                           ret.append(ACFileGroup(current))
+                           current = [check]
+                       }
+                       
+                   } else {
+                       current.append(check)
+                   }
+               }
+               
+               ret.append(ACFileGroup(current))
+               print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
+               DispatchQueue.main.async {[weak self] in
+                   guard let self = self else {return}
+                   self.matchPhotos = ret
+                   self.isComputingCluster = false
+                   loader?.finish(key: k1)
+                   
+               }
+           }
+       }
+ */
 }

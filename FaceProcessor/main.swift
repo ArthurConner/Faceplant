@@ -36,6 +36,7 @@ func checkTime(_ label:String){
 
 extension  FileLoader  {
     
+    /*
     func findFar(count:Int,tot:Int = 10){
         print("starting")
         let sample = files.prefix(tot).filter{ $0.features != nil }
@@ -176,6 +177,7 @@ extension  FileLoader  {
         }
         save()
     }
+ */
 }
 
 struct PhotoRecord{
@@ -255,22 +257,32 @@ struct PhotoRecord{
 
 
 //let winner:[String,
-let file = "/Users/arthurconner/code/photostudy/vals.csv"
 
-do {
-    if  FileManager.default.fileExists(atPath: file) {
-        try FileManager.default.removeItem(atPath: file)
+/*
+func olderProcess(){
+    let file = "/Users/arthurconner/code/photostudy/vals.csv"
+
+    do {
+        if  FileManager.default.fileExists(atPath: file) {
+            try FileManager.default.removeItem(atPath: file)
+        }
+          FileManager.default.createFile(atPath: file, contents: nil, attributes: nil)
+    } catch {
+        print("error with files \(error)")
     }
-      FileManager.default.createFile(atPath: file, contents: nil, attributes: nil)
-} catch {
-    print("error with files \(error)")
+
+    let loud = LoudProgress()
+    let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG","JPEG","PNG"], isImage: true,loader: loud)
+    main.updateKeeper(file: file)
+    PhotoRecord.run(file: file)
 }
+ */
 
-let loud = LoudProgress()
-let main = FileLoader(recursive: "/Volumes/Zoetrope/images", kinds: ["JPG","JPEG","PNG"], isImage: true,loader: loud)
-main.updateKeeper(file: file)
-PhotoRecord.run(file: file)
+let path = "/Volumes/Zoetrope/images/2019/11/Keeper"
+let loader = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: nil,name:"Status.json")
+loader.matchPhotos =  loader.makeClusters()
 
+loader.save()
 
 
 
