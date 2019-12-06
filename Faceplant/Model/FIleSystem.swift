@@ -7,9 +7,9 @@
 //
 
 import Foundation
-import SwiftUI
+
 import ImageIO
-import Combine
+
 import Vision
 
 
@@ -34,12 +34,10 @@ class FileLoader  :   Codable {
     let files:[FileInfo:ACFileStatus]
     var source:String
     var name:String = "Status.json"
-    let objectWillChange = PassthroughSubject<FileLoader, Never>()
-    
+
     var matchPhotos: [ACFileGroup]? = []
     
-   
-    
+
     enum CodingKeys: String, CodingKey {
         case matchPhotos
         case files
@@ -48,23 +46,8 @@ class FileLoader  :   Codable {
         
     }
     
-     weak var loader:ProgressMonitor? = nil
-    
-    var isComputingCluster = false
-   // var updateSubject = PassthroughSubject<Bool, Never>()
-   // var updateClusters:AnyCancellable?
-    
-
-    
-    var theshold:Float = 10.0  {
-        willSet {
-            
-          //  updateSubject.send(isComputingCluster)
-            
-        }
-    }
-    
-    @Published var selectIndex:Int = -1
+    var theshold:Float = 10.0
+    var selectIndex:Int = -1
     
     
     static func contentsOf(_ path:String, kinds:[String], isImage:Bool = true)->[String]{
@@ -145,15 +128,15 @@ class FileLoader  :   Codable {
         }
         
         /*
-        updateClusters = updateSubject.debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
-            .drop(while:{$0})
-            
-            .sink{[weak self] x in
-                guard let self = self else {return}
-                self.makeClusters()
-                
-        }
- */
+         updateClusters = updateSubject.debounce(for: .milliseconds(5000), scheduler: RunLoop.main)
+         .drop(while:{$0})
+         
+         .sink{[weak self] x in
+         guard let self = self else {return}
+         self.makeClusters()
+         
+         }
+         */
         
     }
     
@@ -223,6 +206,7 @@ class FileLoader  :   Codable {
     }
     
     func save( _ savePath:String?=nil){
+        
         let jsonEncoder = JSONEncoder()
         let url:URL
         
@@ -231,6 +215,8 @@ class FileLoader  :   Codable {
         } else {
             url = URL(fileURLWithPath: (source as NSString).appendingPathComponent(name))
         }
+        print("saving to \(url)")
+        
         jsonEncoder.outputFormatting = .prettyPrinted
         if let data =  try? jsonEncoder.encode(self){
             try? data.write(to:url)
@@ -254,150 +240,154 @@ class FileLoader  :   Codable {
     }
     
     /*
-    func indexOf(key:String)->Int?{
-        var lowerIndex = 0;
-        var upperIndex = files.count - 1
-        
-        let search = allFiles().sorted(by: { $0.key < $1.key})
-        
-        while (true) {
-            let currentIndex = (lowerIndex + upperIndex)/2
-            if(search[currentIndex].key == key) {
-                return currentIndex
-            } else if (lowerIndex > upperIndex) {
-                return nil
-            } else {
-                if (search[currentIndex].key > key) {
-                    upperIndex = currentIndex - 1
-                } else {
-                    lowerIndex = currentIndex + 1
-                }
-            }
-        }
-    }
- */
+     func indexOf(key:String)->Int?{
+     var lowerIndex = 0;
+     var upperIndex = files.count - 1
+     
+     let search = allFiles().sorted(by: { $0.key < $1.key})
+     
+     while (true) {
+     let currentIndex = (lowerIndex + upperIndex)/2
+     if(search[currentIndex].key == key) {
+     return currentIndex
+     } else if (lowerIndex > upperIndex) {
+     return nil
+     } else {
+     if (search[currentIndex].key > key) {
+     upperIndex = currentIndex - 1
+     } else {
+     lowerIndex = currentIndex + 1
+     }
+     }
+     }
+     }
+     */
 }
 
 fileprivate let clusterQue = DispatchQueue(label: "ClusterQueue", qos: .userInitiated, attributes:  [], autoreleaseFrequency: .workItem, target: nil)
 
 extension FileLoader {
-    func makeClusters()->[ACFileGroup]{
+    func makeClusters(loader:ProgressMonitor?)->[ACFileGroup]{
         
         
-            
-            guard !self.files.isEmpty else { return [] }
-            let k1 = "cluster \(self.source)"
-            loader?.add(key: k1, name: "clustering", total: self.files.count)
-            let f =  self.allFiles()
-            
-            var ret:[ACFileGroup] = []
-            for v in f {
-                _ = v.features
-                loader?.update(key: k1, amount: 1)
-            }
-            let unknown = f.filter{ $0.features == nil }
-            if !unknown.isEmpty {
-                ret.append(ACFileGroup(unknown.map{return $0.info}))
-            }
-            
-            let known = f.filter{ $0.features != nil }
-            var i = 0
-            var current:[ACFileStatus] = []
-            while (i < known.count) {
-                let check = known[i]
-                i += 1
-                if let goodExample = current.last{
-                    do {
-                        var distance = Float(0)
-                        try goodExample.features!.computeDistance(&distance, to: check.features!)
-                        // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
-                        if distance < self.theshold {
-                            current.append(check)
-                        } else {
-                            ret.append(ACFileGroup(current.map{return $0.info}))
-                            current = [check]
-                        }
-                        
-                    } catch {
+        
+        guard !self.files.isEmpty else { return [] }
+        let k1 = "cluster \(self.source)"
+        loader?.add(key: k1, name: "clustering", total: self.files.count)
+        let f =  self.allFiles()
+        
+        var ret:[ACFileGroup] = []
+        for v in f {
+            _ = v.features
+            loader?.update(key: k1, amount: 1)
+        }
+        let unknown = f.filter{ $0.features == nil }
+        if !unknown.isEmpty {
+            ret.append(ACFileGroup(unknown.map{return $0.info}))
+        }
+        
+        let known = f.filter{ $0.features != nil }
+        var i = 0
+        var current:[ACFileStatus] = []
+        while (i < known.count) {
+            let check = known[i]
+            i += 1
+            if let goodExample = current.last{
+                do {
+                    var distance = Float(0)
+                    try goodExample.features!.computeDistance(&distance, to: check.features!)
+                    // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+                    if distance < self.theshold {
+                        current.append(check)
+                    } else {
                         ret.append(ACFileGroup(current.map{return $0.info}))
                         current = [check]
                     }
                     
-                } else {
-                    current.append(check)
+                } catch {
+                    ret.append(ACFileGroup(current.map{return $0.info}))
+                    current = [check]
                 }
+                
+            } else {
+                current.append(check)
             }
-            
-            ret.append(ACFileGroup(current.map{return $0.info}))
+        }
         
-            print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
+        ret.append(ACFileGroup(current.map{return $0.info}))
+        
+        print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
         return ret
         
         
     }
     
     /*
-    func makeClustersOld(){
-           
-           self.isComputingCluster = true
-           
-           clusterQue.async { [weak loader, weak self] in
-               
-               guard let self = self else { return }
-               
-               guard !self.files.isEmpty else { return }
-               let k1 = "cluster \(self.source)"
-               loader?.add(key: k1, name: "clustering", total: self.files.count)
-               let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
-               
-               var ret:[ACFileGroup] = []
-               for v in f {
-                   _ = v.features
-                   loader?.update(key: k1, amount: 1)
-               }
-               let unknown = f.filter{ $0.features == nil }
-               if !unknown.isEmpty {
-                   ret.append(ACFileGroup(unknown))
-               }
-               
-               let known = f.filter{ $0.features != nil }
-               var i = 0
-               var current:[ACFileStatus] = []
-               while (i < known.count) {
-                   let check = known[i]
-                   i += 1
-                   if let goodExample = current.last{
-                       do {
-                           var distance = Float(0)
-                           try goodExample.features!.computeDistance(&distance, to: check.features!)
-                           // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
-                           if distance < self.theshold {
-                               current.append(check)
-                           } else {
-                               ret.append(ACFileGroup(current))
-                               current = [check]
-                           }
-                           
-                       } catch {
-                           ret.append(ACFileGroup(current))
-                           current = [check]
-                       }
-                       
-                   } else {
-                       current.append(check)
-                   }
-               }
-               
-               ret.append(ACFileGroup(current))
-               print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
-               DispatchQueue.main.async {[weak self] in
-                   guard let self = self else {return}
-                   self.matchPhotos = ret
-                   self.isComputingCluster = false
-                   loader?.finish(key: k1)
-                   
-               }
-           }
-       }
- */
+     func makeClustersOld(){
+     
+     self.isComputingCluster = true
+     
+     clusterQue.async { [weak loader, weak self] in
+     
+     guard let self = self else { return }
+     
+     guard !self.files.isEmpty else { return }
+     let k1 = "cluster \(self.source)"
+     loader?.add(key: k1, name: "clustering", total: self.files.count)
+     let f =  self.files.sorted(by: {$0.info.path < $1.info.path})
+     
+     var ret:[ACFileGroup] = []
+     for v in f {
+     _ = v.features
+     loader?.update(key: k1, amount: 1)
+     }
+     let unknown = f.filter{ $0.features == nil }
+     if !unknown.isEmpty {
+     ret.append(ACFileGroup(unknown))
+     }
+     
+     let known = f.filter{ $0.features != nil }
+     var i = 0
+     var current:[ACFileStatus] = []
+     while (i < known.count) {
+     let check = known[i]
+     i += 1
+     if let goodExample = current.last{
+     do {
+     var distance = Float(0)
+     try goodExample.features!.computeDistance(&distance, to: check.features!)
+     // print("distance from \(goodExample.info.key) to \(check.info.key) is \(distance)")
+     if distance < self.theshold {
+     current.append(check)
+     } else {
+     ret.append(ACFileGroup(current))
+     current = [check]
+     }
+     
+     } catch {
+     ret.append(ACFileGroup(current))
+     current = [check]
+     }
+     
+     } else {
+     current.append(check)
+     }
+     }
+     
+     ret.append(ACFileGroup(current))
+     print("we [\(self.name)] have \(ret.count) groups for \(self.theshold)")
+     DispatchQueue.main.async {[weak self] in
+     guard let self = self else {return}
+     self.matchPhotos = ret
+     self.isComputingCluster = false
+     loader?.finish(key: k1)
+     
+     }
+     }
+     }
+     */
 }
+
+
+
+

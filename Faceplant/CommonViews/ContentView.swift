@@ -166,7 +166,8 @@ struct ContentView : View {
 
 */
 struct ContentView : View {
-    
+    @ObservedObject var model: FileLoaderModel
+
     var body: some View {
     
     VStack{

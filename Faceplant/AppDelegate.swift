@@ -54,9 +54,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                cv.obj.item.loader = nil
             }
         }
+         
+         let path = "/Volumes/Zoetrope/images/2019/11/Keeper"
+         let loader = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: nil,name:"Status.json")
+         
  */
         
-        let cv = ContentView()
+        let cv = ContentView(model:FileLoaderModel(path: "/Volumes/Zoetrope/images/2019/11/Keeper", label: "Status.json"))
         window.contentView = NSHostingView(rootView: cv)
         window.makeKeyAndOrderFront(nil)
 
