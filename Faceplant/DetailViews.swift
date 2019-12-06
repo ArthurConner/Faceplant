@@ -8,6 +8,8 @@
 
 import SwiftUI
 
+
+/*
 struct ThumbnailView : View {
     
     @ObservedObject var info:ACFileStatus
@@ -23,6 +25,7 @@ struct ThumbnailView : View {
     
 }
 
+ */
 
 
 

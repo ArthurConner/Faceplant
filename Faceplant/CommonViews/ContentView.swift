@@ -3,9 +3,7 @@ import SwiftUI
 
 extension ACFileStatus {
     func background(rad:CGFloat)-> some View{
-        
-        
-        
+
         if isKeeper {
             return Color.blue.cornerRadius(rad)
         } else {
@@ -14,7 +12,7 @@ extension ACFileStatus {
     }
 }
 
-
+/*
 struct DetailView : View {
     
     @ObservedObject var loader:FileLoader
@@ -166,7 +164,18 @@ struct ContentView : View {
     */
 }
 
-
+*/
+struct ContentView : View {
+    
+    var body: some View {
+    
+    VStack{
+                Text("Loading ")
+        
+        }
+    }
+}
+/*
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
@@ -175,3 +184,4 @@ struct ContentView_Previews : PreviewProvider {
     }
 }
 #endif
+*/

@@ -24,6 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
         window.setFrameAutosaveName("Main Window")
         
+        
+        /*
         let mymont = ProgessWatcher(item: FileLoader.empty)
         let cv = ContentView(obj: mymont, fLoader:FileLoader.empty)
         let monitor = mymont.monitor
@@ -52,6 +54,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                cv.obj.item.loader = nil
             }
         }
+ */
+        
+        let cv = ContentView()
         window.contentView = NSHostingView(rootView: cv)
         window.makeKeyAndOrderFront(nil)
 
