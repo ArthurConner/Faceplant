@@ -13,7 +13,7 @@ import SwiftUI
 struct ThumbnailView : View {
     
     var info:ACFileStatus
-    var im:ImageFileResource
+   @ObservedObject var im:ImageFileResource
     let radius:CGFloat
     
     var body: some View {

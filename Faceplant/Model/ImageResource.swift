@@ -20,12 +20,13 @@ fileprivate  let imagequeue = DispatchQueue(label: "thumbnailqueue", qos: .userI
 
 class ImageFileResource: ObservableObject {
     let willChange = PassthroughSubject<OSImage, Never>()
-    private let subject = PassthroughSubject<(), Never>()
+    //private let subject = PassthroughSubject<(), Never>()
     let url:String
     let maxDim:CGFloat
     var firstLoad = true
+    @Published var image:OSImage = OSImage(named: "empty.jpeg")!
     
-    
+    /*
     var image = OSImage(named: "empty.jpeg")! {
         willSet {
             DispatchQueue.main.async {
@@ -33,6 +34,8 @@ class ImageFileResource: ObservableObject {
             }
         }
     }
+ */
+    
     
     init(url: String,maxDim: CGFloat) {
         self.url = url
