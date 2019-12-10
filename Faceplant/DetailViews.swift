@@ -9,11 +9,11 @@
 import SwiftUI
 
 
-/*
+
 struct ThumbnailView : View {
     
-    @ObservedObject var info:ACFileStatus
-    @ObservedObject var im:ImageFileResource
+    var info:ACFileStatus
+    var im:ImageFileResource
     let radius:CGFloat
     
     var body: some View {
@@ -25,7 +25,7 @@ struct ThumbnailView : View {
     
 }
 
- */
+
 
 
 

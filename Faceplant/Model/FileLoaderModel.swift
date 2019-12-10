@@ -16,21 +16,24 @@ class FileLoaderModel  :   ObservableObject {
     
     @Published var model:FileLoader?
     @Published var error: String? = nil
+    @Published var groups:[ACFileGroup] = []
+    @Published var threshold:Double = 5
     
     let path:String
     let label:String
-     
+    
     var monitor = LoudProgress()
     
-    var isComputingCluster:Float = 0.0
+    // @Published var isComputingCluster = 10.0
     
     private var subscriptions = Set<AnyCancellable>()
     
-    func computeClusters(){
+    func computeClusters(_ x:Double){
+        print("About to compute \(x)")
         guard let m = self.model else {return}
-        guard  isComputingCluster > 0 else {return}
-        isComputingCluster = -m.theshold - 1
-        let target = m.theshold
+        guard x > 0 else {return}
+        // isComputingCluster = -m.theshold - 1
+        m.theshold = Float(x)
         
         FileLoaderModelQue.async {
             [weak self] in
@@ -38,30 +41,42 @@ class FileLoaderModel  :   ObservableObject {
             DispatchQueue.main.async {
                 [weak self ] in
                 if let m = self?.model{
-                    self?.isComputingCluster = target
                     m.matchPhotos = c
-                    self?.model = m
-                    
+                    m.save()
                 }
+                self?.groups = c
             }
         }
-        
     }
     
     init(path:String,label:String) {
         
         self.path = path
         self.label = label
-
+        
         FileLoaderModelQue.async {
-             [weak self ] in
+            [weak self ] in
             let m = FileLoader(recursive:path, kinds: [".JPG"], isImage: true,loader: self?.monitor,name:"\(label).json")
             DispatchQueue.main.async {
                 [weak self ] in
                 self?.model = m
-                self?.computeClusters()
+                self?.computeClusters(Double(m.theshold))
             }
         }
+        
+        $threshold.receive(on: DispatchQueue.main)
+            .debounce(for: .seconds(1.0), scheduler: DispatchQueue.main)
+            .sink(receiveCompletion: {[weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.error = "\(error)"
+                }
+                }, receiveValue: { x in
+                    if x >= 0 {
+                        self.computeClusters(x)
+                    }
+                    self.error = nil
+            })
+            .store(in: &subscriptions)
         
         
         $model.receive(on: DispatchQueue.main)
@@ -72,6 +87,7 @@ class FileLoaderModel  :   ObservableObject {
             }, receiveValue: { x in
                 if let model = x {
                     model.save()
+                    self.groups = model.matchPhotos ?? []
                 }
                 self.error = nil
             })
