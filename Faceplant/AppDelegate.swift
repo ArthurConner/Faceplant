@@ -60,7 +60,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          
  */
         
-        let cv = ContentView(model:FileLoaderModel(path: "/Volumes/Zoetrope/images/2019/11/Keeper", label: "Status"))
+       // let a = ContentView(model: <#T##EnvironmentObject<FileLoaderModel>#>)
+        
+        let cv = ContentView().environmentObject(FileLoaderModel(path: "/Volumes/Zoetrope/images/2019/11/Keeper", label: "Status"))
         window.contentView = NSHostingView(rootView: cv)
         window.makeKeyAndOrderFront(nil)
 

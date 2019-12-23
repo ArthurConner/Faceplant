@@ -17,7 +17,9 @@ class FileLoaderModel  :   ObservableObject {
     @Published var model:FileLoader?
     @Published var error: String? = nil
     @Published var groups:[ACFileGroup] = []
-    @Published var threshold:Double = 5
+    @Published var threshold:Double = 0
+    @Published var selected:Set<FileInfo> = []
+   // @Published var matchPhotos: [ACFileGroup] = []
     
     let path:String
     let label:String
@@ -29,9 +31,14 @@ class FileLoaderModel  :   ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
     
     func computeClusters(_ x:Double){
-        print("About to compute \(x)")
+       
         guard let m = self.model else {return}
-        guard x > 0 else {return}
+        guard x > 0 else {
+            print("not going to compute clusters")
+            
+            return}
+        
+         print("About to compute \(x)")
         // isComputingCluster = -m.theshold - 1
         m.theshold = Float(x)
         
@@ -41,6 +48,7 @@ class FileLoaderModel  :   ObservableObject {
             DispatchQueue.main.async {
                 [weak self ] in
                 if let m = self?.model{
+                    self?.groups = c
                     m.matchPhotos = c
                     m.save()
                 }
@@ -60,6 +68,8 @@ class FileLoaderModel  :   ObservableObject {
             DispatchQueue.main.async {
                 [weak self ] in
                 self?.model = m
+                self?.groups = m.matchPhotos ?? []
+                self?.threshold = Double(m.theshold)
                 self?.computeClusters(Double(m.theshold))
             }
         }
@@ -87,7 +97,7 @@ class FileLoaderModel  :   ObservableObject {
             }, receiveValue: { x in
                 if let model = x {
                     model.save()
-                    self.groups = model.matchPhotos ?? []
+                   
                 }
                 self.error = nil
             })
