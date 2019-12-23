@@ -148,8 +148,8 @@ extension ACFileStatus {
 
 func makeScale(path:String,maxDim:CGFloat = 300)->NSImage?{
     
-    let thumbSize = NSSize(width: 128, height: 128)
-    let largeSize:CGFloat = 600
+   // let thumbSize = NSSize(width: 128, height: 128)
+   // let largeSize:CGFloat = 600
     
     let url = URL(fileURLWithPath: path)
     
@@ -201,17 +201,25 @@ fileprivate var skipSet = Set<NSString>()
 
 class ImageLoader: ObservableObject {
     var didChange = PassthroughSubject<OSImage, Never>()
-    var maxDim:CGFloat = 200
+    var maxDim:CGFloat //= 200
     
+    static let skipMe = "SkipMe"
     var data = OSImage(named: "empty.jpeg")! {
         didSet {
             didChange.send(data)
         }
     }
     
-    init(urlString:String) {
-        let path = URL(fileURLWithPath: urlString)
+    init(urlString:String,dim:CGFloat) {
         
+        guard urlString != ImageLoader.skipMe else {
+            print("Not going to load anything")
+            self.maxDim = dim
+            return
+        }
+        
+        let path = URL(fileURLWithPath: urlString)
+        self.maxDim = dim
         let key:NSString = (urlString as NSString)
         
         if let cachedVersion = cache.object(forKey: key) {
@@ -290,7 +298,7 @@ struct ImageView: View {
     
     init(info inf:FileInfo) {
         
-        imageLoader = ImageLoader(urlString:inf.path)
+        imageLoader = ImageLoader(urlString:inf.path,dim:200)
         info = inf
     }
     
@@ -306,43 +314,69 @@ struct ImageView: View {
     }
 }
 
-struct GroupView : View {
-    
-    @State var group:ACFileGroup
-    //let files:[FileInfo:ACFileStatus]
+
+
+struct ImageDetail: View {
+    @ObservedObject var imageLoader:ImageLoader
     @EnvironmentObject var model: FileLoaderModel
+    @State var group:ACFileGroup = ACFileGroup([])
+    @State var image:OSImage = OSImage(named: "empty.jpeg")!
+    
+    init(group inf:ACFileGroup) {
+     
+        guard inf.selectedID >= 0 else {
+            
+           
+            self.imageLoader =  ImageLoader(urlString:ImageLoader.skipMe,dim:800)
+            return
+        }
+         
+        imageLoader = ImageLoader(urlString:inf.members[inf.selectedID].path,dim:800)
+       group = inf
+    }
+    
+    var body: some View {
+        VStack {
+            Image(nsImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width:100, height:100)
+        }.onReceive(imageLoader.didChange) { data in
+            self.image =  data
+        }
+    }
+}
+
+
+
+struct DetailView:View {
+    @EnvironmentObject var model: FileLoaderModel
+    @State var group:ACFileGroup
     
     var body: some View {
         
-        let files = model.model?.files ?? [:]
-        let items = group.members.compactMap{ files[$0]}
-        //let resources:[(status:ACFileStatus,resource:ImageFileResource)] = items.compactMap{($0,ImageFileResource(url: $0.info.path, maxDim: 50))}
-        //let im:OSImage = items[0].image.image
-        
-        return
-            
-            
-            
-            ScrollView(.horizontal, showsIndicators: true){
-                Text("count \(items.count) and \(files.count)")
-                HStack{
-                    //Spacer().background(Color.blue.cornerRadius(CGFloat(4.0)))
-                    
-                    ForEach(items){ x in
-                        VStack{
-                            ImageView(info: x.info)
-                            Text("[\(x.info.key)]")
-                        }
+        return VStack {
+            List {
+                
+                Group {
+                    if (group.selectedID >= 0) {
+                        ImageDetail(group:group)
                     }
-                    
                 }
-                Spacer()
+                
+                ScrollView(.horizontal, content: {
+                                   HStack(spacing: 10) {
+                ForEach(group.members, id: \.self) { member in
+                    ImageView(info:member)
+                    
+                }}
+                    .padding(.leading, 10)
+                })
+            }
         }
     }
     
 }
-
-
 
 struct ContentView : View {
     @EnvironmentObject var model: FileLoaderModel
@@ -350,24 +384,23 @@ struct ContentView : View {
     var body: some View {
         let range:ClosedRange<Double> =  1...25
         let twoDecimalPlaces = String(format: "%.2f", Float(model.threshold))
-        //let lookup = model.model?.files ?? [:]
-        // let status = model.monitor.details
-        
         return  VStack{
             Text("Threshold \(twoDecimalPlaces)")
             
             Slider(value: $model.threshold, in:range)
-            ForEach(model.monitor.details,id: \.name){ x in
-                Text(x.name)
-                
-            }
-            // ScrollView(.vertical, showsIndicators: true){
-            List(model.groups, id: \.id) { x in
-                
-                GroupView(group: x)
-                
-            }
-            // }
+            
+               NavigationView {
+                      List {
+                        ForEach(model.groups) { index in
+                            NavigationLink(destination:  DetailView(group:index)) {
+                                Text("Link \(index.id)")
+                              }
+                          }
+                      }.listStyle(SidebarListStyle())
+
+                 }
+            
+
         }
     }
 }
