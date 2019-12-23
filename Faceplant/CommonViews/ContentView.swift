@@ -296,9 +296,11 @@ struct ImageView: View {
     @State var info:FileInfo = FileInfo(path: "", date: DateComponents())
     @State var image:OSImage = OSImage(named: "empty.jpeg")!
     
+    let imSize:CGFloat = 300
+    
     init(info inf:FileInfo) {
         
-        imageLoader = ImageLoader(urlString:inf.path,dim:200)
+        imageLoader = ImageLoader(urlString:inf.path,dim:imSize)
         info = inf
     }
     
@@ -307,7 +309,7 @@ struct ImageView: View {
             Image(nsImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width:100, height:100)
+                .frame(width:imSize, height:imSize)
         }.onReceive(imageLoader.didChange) { data in
             self.image =  data
         }
